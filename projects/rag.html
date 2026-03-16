@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAG System — AI 문서 검색 시스템 포트폴리오</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+  <style>
+    /* ========== 1. CSS Variables ========== */
+    :root {
+      --bg-primary: #0a0f1e;
+      --bg-secondary: #0f1629;
+      --bg-card: #151d30;
+      --bg-card-hover: #1a2540;
+      --border: #1e2d4a;
+      --border-glow: rgba(59,130,246,0.35);
+      --text-primary: #e8edf5;
+      --text-secondary: #8b9dc3;
+      --text-muted: #5a6d8a;
+      --accent-blue: #3b82f6;
+      --accent-cyan: #06b6d4;
+      --accent-violet: #8b5cf6;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-rose: #f43f5e;
+      --gradient-primary: linear-gradient(135deg, #3b82f6, #06b6d4);
+      --gradient-secondary: linear-gradient(135deg, #8b5cf6, #3b82f6);
+      --gradient-accent: linear-gradient(135deg, #06b6d4, #10b981);
+      --font-display: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-body: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'Space Mono', monospace;
+      --radius: 12px;
+      --radius-lg: 20px;
+      --shadow-card: 0 4px 24px rgba(0,0,0,0.4);
+      --shadow-glow: 0 0 40px rgba(59,130,246,0.12);
+    }
+
+    /* ========== 2. Reset & Base ========== */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.7;
+      overflow-x: hidden;
+      background-image: radial-gradient(circle, rgba(59,130,246,0.06) 1px, transparent 1px);
+      background-size: 32px 32px;
+      padding-top: 48px;
+    }
+    body::before {
+      content: '';
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: radial-gradient(ellipse at 20% 20%, rgba(59,130,246,0.06) 0%, transparent 50%),
+                  radial-gradient(ellipse at 80% 80%, rgba(139,92,246,0.05) 0%, transparent 50%);
+      pointer-events: none; z-index: 0;
+    }
+    a { color: var(--accent-cyan); text-decoration: none; }
+    img { max-width: 100%; }
+
+    /* ========== 3. Utilities ========== */
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+    .section { padding: clamp(60px, 8vw, 120px) 0; position: relative; }
+    .section-label {
+      font-family: var(--font-mono); font-size: 0.8rem; letter-spacing: 3px;
+      text-transform: uppercase; color: var(--accent-cyan); margin-bottom: 12px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .section-label::before { content: ''; width: 32px; height: 1px; background: var(--accent-cyan); }
+    .section-title {
+      font-family: var(--font-display); font-weight: 800;
+      font-size: clamp(2rem, 4vw, 3rem); line-height: 1.2; margin-bottom: 20px;
+    }
+    .section-desc { color: var(--text-secondary); font-size: 1.05rem; max-width: 640px; margin-bottom: 48px; }
+    .gradient-text {
+      background: var(--gradient-primary);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 32px; transition: all 0.35s ease;
+    }
+    .card:hover {
+      border-color: var(--border-glow); background: var(--bg-card-hover);
+      box-shadow: var(--shadow-glow); transform: translateY(-3px);
+    }
+    .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .reveal.active { opacity: 1; transform: translateY(0); }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+
+    /* ========== 4. Navigation ========== */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(10,15,30,0.85); backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(30,45,74,0.5);
+    }
+    nav .nav-inner {
+      max-width: 1200px; margin: 0 auto; padding: 0 24px;
+      display: flex; align-items: center; justify-content: space-between; height: 64px;
+    }
+    nav .nav-logo { font-family: var(--font-display); font-weight: 800; font-size: 1.1rem; }
+    nav .nav-links { display: flex; gap: 28px; list-style: none; }
+    nav .nav-links a {
+      font-size: 0.85rem; color: var(--text-secondary); transition: color 0.3s;
+      font-weight: 500; letter-spacing: 0.3px;
+    }
+    nav .nav-links a:hover, nav .nav-links a.active { color: var(--accent-cyan); }
+    .nav-toggle { display: none; background: none; border: none; color: var(--text-primary); font-size: 1.4rem; cursor: pointer; }
+
+    /* ========== 5. Hero Section ========== */
+    #hero {
+      min-height: 100vh; display: flex; align-items: center; padding-top: 80px;
+      position: relative; overflow: hidden;
+    }
+    #hero::before {
+      content: ''; position: absolute; top: -200px; right: -200px;
+      width: 600px; height: 600px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(59,130,246,0.12), transparent 70%);
+      pointer-events: none;
+    }
+    #hero::after {
+      content: ''; position: absolute; bottom: -150px; left: -150px;
+      width: 500px; height: 500px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(139,92,246,0.08), transparent 70%);
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.25);
+      border-radius: 50px; padding: 6px 16px; font-size: 0.8rem;
+      font-family: var(--font-mono); color: var(--accent-blue); margin-bottom: 24px;
+    }
+    .hero-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-emerald); animation: pulse 2s infinite; }
+    .hero-title {
+      font-family: var(--font-display); font-weight: 800;
+      font-size: clamp(2.8rem, 6vw, 5rem); line-height: 1.08; margin-bottom: 16px;
+    }
+    .hero-subtitle {
+      font-size: clamp(1rem, 2vw, 1.25rem); color: var(--text-secondary);
+      max-width: 560px; margin-bottom: 48px; line-height: 1.7;
+    }
+    .hero-meta {
+      display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 12px;
+      font-size: 0.85rem; color: var(--text-muted); font-family: var(--font-mono);
+    }
+    .hero-meta span { display: flex; align-items: center; gap: 6px; }
+    .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 40px; }
+    .metric-card {
+      background: rgba(21,29,48,0.8); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 24px; text-align: center;
+      transition: all 0.35s; position: relative; overflow: hidden;
+    }
+    .metric-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    }
+    .metric-card:nth-child(1)::before { background: var(--gradient-primary); }
+    .metric-card:nth-child(2)::before { background: linear-gradient(90deg, #f59e0b, #ef4444); }
+    .metric-card:nth-child(3)::before { background: var(--gradient-accent); }
+    .metric-card:nth-child(4)::before { background: var(--gradient-secondary); }
+    .metric-card:hover { border-color: var(--border-glow); transform: translateY(-2px); box-shadow: var(--shadow-glow); }
+    .metric-value {
+      font-family: var(--font-mono); font-size: clamp(1.8rem, 3vw, 2.8rem);
+      font-weight: 700; margin-bottom: 4px;
+    }
+    .metric-card:nth-child(1) .metric-value { color: var(--accent-cyan); }
+    .metric-card:nth-child(2) .metric-value { color: var(--accent-amber); }
+    .metric-card:nth-child(3) .metric-value { color: var(--accent-emerald); }
+    .metric-card:nth-child(4) .metric-value { color: var(--accent-violet); }
+    .metric-label { font-size: 0.85rem; color: var(--text-secondary); }
+    .metric-sub { font-size: 0.7rem; color: var(--text-muted); font-family: var(--font-mono); margin-top: 4px; }
+    .tech-badges { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tech-badge {
+      display: inline-flex; align-items: center; padding: 6px 14px;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 50px; font-size: 0.78rem; color: var(--text-secondary);
+      font-family: var(--font-mono); transition: all 0.3s;
+    }
+    .tech-badge:hover { border-color: var(--accent-cyan); color: var(--accent-cyan); background: rgba(6,182,212,0.06); }
+
+    /* ========== 6. Architecture Section ========== */
+    #architecture { border-top: 1px solid var(--border); }
+    .arch-container {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+      padding: 40px 24px; overflow-x: auto;
+    }
+    .arch-svg { width: 100%; height: auto; min-width: 700px; }
+    .arch-svg .layer-label { font-family: var(--font-mono); font-size: 10px; fill: var(--text-muted); letter-spacing: 1.5px; text-transform: uppercase; }
+    .arch-svg .node-box { rx: 8; ry: 8; stroke-width: 1.5; transition: all 0.3s; cursor: pointer; }
+    .arch-svg .node-box:hover { filter: brightness(1.4); stroke-width: 2.5; }
+    .arch-svg .node-text { font-family: var(--font-body); font-size: 12px; fill: #fff; font-weight: 600; text-anchor: middle; pointer-events: none; }
+    .arch-svg .node-sub { font-family: var(--font-body); font-size: 9.5px; fill: rgba(255,255,255,0.6); text-anchor: middle; pointer-events: none; }
+    .arch-svg .flow-line {
+      stroke-width: 1.5; fill: none; stroke-dasharray: 6 4;
+      animation: flowDash 2s linear infinite;
+    }
+    .arch-svg .divider-line { stroke: rgba(255,255,255,0.1); stroke-width: 1; stroke-dasharray: 4 4; }
+    .arch-svg .divider-text { font-family: var(--font-mono); font-size: 9px; fill: var(--text-muted); letter-spacing: 1px; }
+    @keyframes flowDash { to { stroke-dashoffset: -20; } }
+
+    /* Pipeline flows */
+    .pipeline-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 32px; }
+    .pipeline-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; }
+    .pipeline-title {
+      font-family: var(--font-display); font-weight: 700; font-size: 1.1rem;
+      margin-bottom: 20px; display: flex; align-items: center; gap: 10px;
+    }
+    .pipeline-title .pipe-icon {
+      width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center;
+      justify-content: center; font-size: 0.85rem;
+    }
+    .flow-steps { display: flex; flex-direction: column; gap: 0; }
+    .flow-step {
+      display: flex; align-items: center; gap: 12px; padding: 10px 0;
+      border-left: 2px solid var(--border); padding-left: 20px; position: relative;
+    }
+    .flow-step::before {
+      content: ''; position: absolute; left: -5px; top: 50%; transform: translateY(-50%);
+      width: 8px; height: 8px; border-radius: 50%; border: 2px solid var(--accent-cyan); background: var(--bg-primary);
+    }
+    .flow-step:last-child { border-left-color: transparent; }
+    .flow-step .step-name { font-size: 0.88rem; font-weight: 600; }
+    .flow-step .step-detail { font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono); }
+
+    /* ========== 7. Core Features ========== */
+    #core { border-top: 1px solid var(--border); }
+    .feature-card { position: relative; overflow: hidden; }
+    .feature-card .feature-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; margin-bottom: 16px;
+    }
+    .feature-card h3 { font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; margin-bottom: 10px; }
+    .feature-card p { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 20px; }
+    .tier-stack { display: flex; flex-direction: column; gap: 6px; }
+    .tier-item {
+      padding: 10px 14px; border-radius: 8px; font-size: 0.82rem; font-weight: 600;
+      display: flex; flex-direction: column; gap: 2px;
+    }
+    .tier-item span { font-size: 0.72rem; font-weight: 400; color: rgba(255,255,255,0.5); font-family: var(--font-mono); }
+    .hybrid-bar-container { margin-top: 8px; }
+    .hybrid-bar { display: flex; border-radius: 8px; overflow: hidden; height: 36px; }
+    .hybrid-bar .hb-vector {
+      width: 70%; display: flex; align-items: center; justify-content: center;
+      font-size: 0.78rem; font-weight: 700; color: #fff;
+      background: linear-gradient(90deg, #3b82f6, #2563eb);
+    }
+    .hybrid-bar .hb-bm25 {
+      width: 30%; display: flex; align-items: center; justify-content: center;
+      font-size: 0.78rem; font-weight: 700; color: #fff;
+      background: linear-gradient(90deg, #f59e0b, #d97706);
+    }
+    .hybrid-legend { display: flex; gap: 16px; margin-top: 10px; font-size: 0.75rem; color: var(--text-muted); }
+    .hybrid-legend span::before { content: '●'; margin-right: 5px; }
+    .hybrid-legend .vec::before { color: var(--accent-blue); }
+    .hybrid-legend .kw::before { color: var(--accent-amber); }
+    .client-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .client-item {
+      display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+      background: rgba(255,255,255,0.03); border-radius: 8px; font-size: 0.82rem;
+    }
+    .client-item .ci-icon { font-size: 1rem; }
+
+    /* ========== 8. Cases Section ========== */
+    #cases { border-top: 1px solid var(--border); }
+    .cases-grid { display: flex; flex-direction: column; gap: 32px; }
+    .case-card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+      overflow: hidden; transition: all 0.35s;
+    }
+    .case-card:hover { border-color: rgba(59,130,246,0.2); }
+    .case-header {
+      padding: 28px 32px 0; display: flex; align-items: flex-start; gap: 16px;
+    }
+    .case-number {
+      font-family: var(--font-mono); font-size: 0.7rem; font-weight: 700;
+      padding: 4px 10px; border-radius: 50px; letter-spacing: 1px;
+      flex-shrink: 0;
+    }
+    .case-header h3 { font-family: var(--font-display); font-weight: 700; font-size: 1.2rem; }
+    .case-body { padding: 20px 32px 32px; }
+    .case-flow {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+      margin-bottom: 24px;
+    }
+    .case-flow-step {
+      text-align: center; padding: 16px 8px; border-radius: 10px;
+      background: rgba(255,255,255,0.02); border: 1px solid var(--border); position: relative;
+    }
+    .case-flow-step:not(:last-child)::after {
+      content: '→'; position: absolute; right: -10px; top: 50%; transform: translateY(-50%);
+      color: var(--text-muted); font-size: 0.9rem; z-index: 2;
+    }
+    .case-flow-step .cfs-label { font-size: 0.68rem; color: var(--text-muted); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 1px; }
+    .case-flow-step .cfs-text { font-size: 0.82rem; font-weight: 600; margin-top: 6px; }
+    .bar-chart { display: flex; flex-direction: column; gap: 12px; margin: 16px 0; }
+    .bar-row { display: flex; align-items: center; gap: 12px; }
+    .bar-label { font-size: 0.78rem; font-family: var(--font-mono); color: var(--text-secondary); width: 50px; text-align: right; flex-shrink: 0; }
+    .bar-track { flex: 1; height: 32px; background: rgba(255,255,255,0.03); border-radius: 6px; overflow: hidden; position: relative; }
+    .bar-fill {
+      height: 100%; border-radius: 6px; display: flex; align-items: center;
+      padding: 0 12px; font-size: 0.75rem; font-weight: 600; font-family: var(--font-mono);
+      color: #fff; transition: width 1.2s ease; width: 0;
+    }
+    .bar-fill.cpu { background: linear-gradient(90deg, #ef4444, #f59e0b); }
+    .bar-fill.gpu { background: linear-gradient(90deg, #10b981, #06b6d4); }
+    .bar-chart.active .bar-fill.cpu { width: 100%; }
+    .bar-chart.active .bar-fill.gpu { width: 5%; }
+    .stats-row { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 16px; }
+    .stat-chip {
+      display: flex; align-items: center; gap: 6px; padding: 6px 12px;
+      background: rgba(255,255,255,0.03); border-radius: 6px; font-size: 0.78rem;
+    }
+    .stat-chip .sc-val { font-family: var(--font-mono); font-weight: 700; }
+    .version-timeline { display: flex; align-items: flex-start; gap: 0; margin: 16px 0; overflow-x: auto; }
+    .vt-step { flex: 1; min-width: 120px; text-align: center; position: relative; padding-top: 24px; }
+    .vt-step::before {
+      content: ''; position: absolute; top: 8px; left: 0; right: 0; height: 2px;
+      background: var(--border);
+    }
+    .vt-step:first-child::before { left: 50%; }
+    .vt-step:last-child::before { right: 50%; }
+    .vt-step::after {
+      content: ''; position: absolute; top: 2px; left: 50%; transform: translateX(-50%);
+      width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--accent-blue);
+      background: var(--bg-primary); z-index: 1;
+    }
+    .vt-step:last-child::after { background: var(--accent-blue); }
+    .vt-ver { font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700; color: var(--accent-blue); }
+    .vt-desc { font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; }
+    .phase-pipeline { display: flex; gap: 4px; margin: 16px 0; overflow-x: auto; }
+    .phase-step {
+      flex: 1; min-width: 110px; padding: 14px 10px; text-align: center;
+      background: rgba(16,185,129,0.06); border: 1px solid rgba(16,185,129,0.2);
+      border-radius: 8px; position: relative;
+    }
+    .phase-step:not(:last-child)::after {
+      content: '→'; position: absolute; right: -8px; top: 50%; transform: translateY(-50%);
+      color: var(--accent-emerald); z-index: 2; font-size: 0.8rem;
+    }
+    .phase-num { font-family: var(--font-mono); font-size: 0.65rem; color: var(--accent-emerald); letter-spacing: 1px; }
+    .phase-name { font-size: 0.78rem; font-weight: 600; margin-top: 4px; }
+    .result-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.85rem; }
+    .result-table th {
+      text-align: left; padding: 10px 14px; border-bottom: 2px solid var(--border);
+      font-size: 0.75rem; font-family: var(--font-mono); color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 1px;
+    }
+    .result-table td { padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+    .result-table tr:hover td { background: rgba(255,255,255,0.02); }
+    .result-table .highlight { color: var(--accent-emerald); font-weight: 700; font-family: var(--font-mono); }
+
+    /* ========== 9. ADK Section ========== */
+    #adk { border-top: 1px solid var(--border); }
+    .adk-flow {
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+      justify-content: center; margin-bottom: 32px;
+    }
+    .adk-node {
+      padding: 16px 20px; background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); text-align: center; min-width: 130px;
+    }
+    .adk-node .an-title { font-size: 0.85rem; font-weight: 700; }
+    .adk-node .an-sub { font-size: 0.7rem; color: var(--text-muted); font-family: var(--font-mono); }
+    .adk-arrow { color: var(--accent-cyan); font-size: 1.2rem; flex-shrink: 0; }
+    .test-table { width: 100%; border-collapse: collapse; }
+    .test-table th {
+      text-align: left; padding: 12px 16px; background: rgba(59,130,246,0.06);
+      border-bottom: 2px solid var(--border); font-size: 0.78rem;
+      font-family: var(--font-mono); color: var(--accent-cyan); letter-spacing: 0.5px;
+    }
+    .test-table td { padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.88rem; }
+    .test-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+    /* ========== 10. Decisions Section ========== */
+    #decisions { border-top: 1px solid var(--border); }
+    .dec-table { width: 100%; border-collapse: collapse; margin-bottom: 32px; }
+    .dec-table th {
+      text-align: left; padding: 12px 16px; background: rgba(139,92,246,0.06);
+      border-bottom: 2px solid var(--border); font-size: 0.78rem; font-family: var(--font-mono);
+      color: var(--accent-violet); letter-spacing: 0.5px;
+    }
+    .dec-table td { padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.88rem; vertical-align: top; }
+    .dec-table tr:hover td { background: rgba(255,255,255,0.02); }
+    .dec-table .chosen { color: var(--accent-emerald); font-weight: 700; }
+    .dec-table .alt { color: var(--text-muted); }
+    .dec-held { margin-top: 16px; }
+    .dec-held-item {
+      display: flex; gap: 16px; padding: 16px; background: rgba(255,255,255,0.02);
+      border-radius: 8px; margin-bottom: 8px; align-items: flex-start;
+    }
+    .dec-held-item .dhi-tech { font-weight: 700; min-width: 160px; color: var(--text-primary); }
+    .dec-held-item .dhi-reason { font-size: 0.88rem; color: var(--text-secondary); }
+
+    /* ========== 11. Status Section ========== */
+    #status { border-top: 1px solid var(--border); }
+    .status-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .status-card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 24px; transition: all 0.35s;
+    }
+    .status-card:hover { border-color: var(--border-glow); box-shadow: var(--shadow-glow); }
+    .status-card .sc-category {
+      font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 1.5px;
+      text-transform: uppercase; color: var(--text-muted); margin-bottom: 16px;
+    }
+    .status-item { display: flex; justify-content: space-between; padding: 6px 0; font-size: 0.88rem; }
+    .status-item .si-label { color: var(--text-secondary); }
+    .status-item .si-value { font-family: var(--font-mono); font-weight: 600; }
+
+    /* ========== 13. Footer ========== */
+    footer {
+      border-top: 1px solid var(--border); padding: 40px 0; text-align: center;
+      color: var(--text-muted); font-size: 0.85rem;
+    }
+    footer .footer-logo { font-family: var(--font-display); font-weight: 800; font-size: 1.3rem; margin-bottom: 8px; }
+
+    /* ========== 14. Animations ========== */
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .stagger-1 { transition-delay: 0.05s; }
+    .stagger-2 { transition-delay: 0.1s; }
+    .stagger-3 { transition-delay: 0.15s; }
+    .stagger-4 { transition-delay: 0.2s; }
+
+    /* ========== 15. Responsive ========== */
+    @media (max-width: 1024px) {
+      .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+      .grid-3 { grid-template-columns: 1fr; }
+      .pipeline-grid { grid-template-columns: 1fr; }
+      .status-grid { grid-template-columns: 1fr 1fr; }
+      .case-flow { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .nav-links.open { display: flex; flex-direction: column; position: absolute; top: 64px; left: 0; right: 0; background: rgba(10,15,30,0.97); padding: 20px 24px; gap: 16px; border-bottom: 1px solid var(--border); }
+      .nav-toggle { display: block; }
+      .metrics-grid { grid-template-columns: 1fr 1fr; }
+      .grid-2, .grid-4 { grid-template-columns: 1fr; }
+      .case-flow { grid-template-columns: 1fr 1fr; }
+      .case-header { flex-direction: column; }
+      .adk-flow { flex-direction: column; }
+      .adk-arrow { transform: rotate(90deg); }
+      .status-grid { grid-template-columns: 1fr; }
+      .version-timeline { flex-wrap: wrap; }
+      .phase-pipeline { flex-wrap: wrap; }
+      .dec-table { font-size: 0.8rem; }
+      .dec-table th, .dec-table td { padding: 8px 10px; }
+    }
+    @media (max-width: 480px) {
+      .metrics-grid { grid-template-columns: 1fr; }
+      .case-flow { grid-template-columns: 1fr; }
+      .case-flow-step:not(:last-child)::after { content: '↓'; right: 50%; transform: translateX(50%); top: auto; bottom: -6px; }
+    }
+  </style>
+</head>
+<body>
+<div style="position:fixed;top:0;left:0;right:0;z-index:9999;background:rgba(10,15,30,0.95);backdrop-filter:blur(10px);padding:12px 24px;border-bottom:1px solid #1e2d4a;">
+  <a href="../index.html" style="color:#06b6d4;text-decoration:none;font-size:0.9rem;font-weight:600;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">← Portfolio</a>
+</div>
+
+<!-- ==================== Navigation ==================== -->
+<nav>
+  <div class="nav-inner">
+    <div class="nav-logo"><span class="gradient-text">RAG System</span></div>
+    <button class="nav-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')" aria-label="메뉴">☰</button>
+    <ul class="nav-links">
+      <li><a href="#hero">Overview</a></li>
+      <li><a href="#architecture">Architecture</a></li>
+      <li><a href="#core">Core</a></li>
+      <li><a href="#cases">Cases</a></li>
+      <li><a href="#adk">ADK</a></li>
+      <li><a href="#decisions">Decisions</a></li>
+      <li><a href="#status">Status</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ==================== 1. Hero Section ==================== -->
+<section id="hero" class="section">
+  <div class="container">
+    <div class="hero-badge"><span class="dot"></span> Production Ready</div>
+    <h1 class="hero-title">
+      <span class="gradient-text">RAG System</span><br>
+      사내 AI 문서 검색
+    </h1>
+    <p class="hero-subtitle">
+      50명 규모 조직의 분산된 사내 문서를 AI 기반으로 통합 검색하는 RAG 시스템을 설계부터 운영까지 전 과정을 주도하여 구축했습니다.
+    </p>
+    <div class="hero-meta">
+      <span>설계 · 인프라 · 백엔드 · 검색엔진 · AI Agent</span>
+    </div>
+
+    <div class="metrics-grid reveal">
+      <div class="metric-card stagger-1">
+        <div class="metric-value" data-count="1" data-prefix="< " data-suffix="초">< 1초</div>
+        <div class="metric-label">검색 응답 시간</div>
+        <div class="metric-sub">End-to-end latency</div>
+      </div>
+      <div class="metric-card stagger-2">
+        <div class="metric-value" data-count="20" data-suffix="x">20x</div>
+        <div class="metric-label">GPU 가속 향상</div>
+        <div class="metric-sub">CPU → GPU embedding</div>
+      </div>
+      <div class="metric-card stagger-3">
+        <div class="metric-value" data-count="27.9" data-prefix="+" data-suffix="%">+27.9%</div>
+        <div class="metric-label">검색 정확도 향상</div>
+        <div class="metric-sub">CCH benchmark</div>
+      </div>
+      <div class="metric-card stagger-4">
+        <div class="metric-value" data-count="0" data-suffix="%" data-from="17">0%</div>
+        <div class="metric-label">소형 청크 비율</div>
+        <div class="metric-sub">200자 미만 완전 제거</div>
+      </div>
+    </div>
+
+    <div class="tech-badges reveal">
+      <span class="tech-badge">Kubernetes 1.28+</span>
+      <span class="tech-badge">FastAPI</span>
+      <span class="tech-badge">Weaviate 1.24</span>
+      <span class="tech-badge">NVIDIA GPU</span>
+      <span class="tech-badge">E5-large Multilingual</span>
+      <span class="tech-badge">Celery + RabbitMQ</span>
+      <span class="tech-badge">PostgreSQL 15</span>
+      <span class="tech-badge">Redis 7</span>
+      <span class="tech-badge">Keycloak SSO</span>
+      <span class="tech-badge">Paperless-ngx</span>
+      <span class="tech-badge">MCP Server</span>
+      <span class="tech-badge">Google ADK</span>
+      <span class="tech-badge">Hybrid Search</span>
+      <span class="tech-badge">Docker / Helm</span>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 2. Architecture ==================== -->
+<section id="architecture" class="section">
+  <div class="container">
+    <div class="section-label">System Architecture</div>
+    <h2 class="section-title">전체 <span class="gradient-text">시스템 아키텍처</span></h2>
+    <p class="section-desc">사용자 접점부터 데이터 레이어까지 전 구간을 Kubernetes 위에서 운영하는 마이크로서비스 아키텍처</p>
+
+    <div class="arch-container reveal">
+      <svg class="arch-svg" viewBox="0 0 960 500" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="ah" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#38bdf8"/>
+          </marker>
+          <linearGradient id="gClient" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#3b82f6"/><stop offset="100%" stop-color="#2563eb"/></linearGradient>
+          <linearGradient id="gApp" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#06b6d4"/><stop offset="100%" stop-color="#0891b2"/></linearGradient>
+          <linearGradient id="gCore" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#8b5cf6"/><stop offset="100%" stop-color="#7c3aed"/></linearGradient>
+          <linearGradient id="gData" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#10b981"/><stop offset="100%" stop-color="#059669"/></linearGradient>
+          <linearGradient id="gAI" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#f59e0b"/><stop offset="100%" stop-color="#d97706"/></linearGradient>
+        </defs>
+
+        <!-- Layer Labels -->
+        <text class="layer-label" x="12" y="40">사용자 접점</text>
+        <text class="layer-label" x="12" y="142">Application</text>
+        <text class="layer-label" x="12" y="248">Core</text>
+        <text class="layer-label" x="12" y="348">Data Layer</text>
+        <text class="layer-label" x="12" y="448">AI / ML</text>
+
+        <!-- HTTPS Divider -->
+        <line class="divider-line" x1="100" y1="82" x2="950" y2="82"/>
+        <text class="divider-text" x="880" y="78">HTTPS</text>
+
+        <!-- Layer 1: Clients -->
+        <g class="arch-node"><title>Paperless-ngx — 문서 관리 UI, 업로드/태그/검색 인터페이스</title>
+          <rect class="node-box" x="130" y="14" width="170" height="50" fill="url(#gClient)" stroke="rgba(59,130,246,0.4)"/>
+          <text class="node-text" x="215" y="36">Paperless WebUI</text>
+          <text class="node-sub" x="215" y="52">문서 관리</text>
+        </g>
+        <g class="arch-node"><title>Claude Desktop / Cursor — MCP 프로토콜로 연동</title>
+          <rect class="node-box" x="395" y="14" width="170" height="50" fill="url(#gClient)" stroke="rgba(59,130,246,0.4)"/>
+          <text class="node-text" x="480" y="36">Claude / Cursor</text>
+          <text class="node-sub" x="480" y="52">MCP 클라이언트</text>
+        </g>
+        <g class="arch-node"><title>Gemini Enterprise — Google Workspace에서 사내 문서 검색</title>
+          <rect class="node-box" x="660" y="14" width="180" height="50" fill="url(#gClient)" stroke="rgba(59,130,246,0.4)"/>
+          <text class="node-text" x="750" y="36">Gemini Enterprise</text>
+          <text class="node-sub" x="750" y="52">Google Workspace</text>
+        </g>
+
+        <!-- Layer 2: Application -->
+        <g class="arch-node"><title>Ingestion API — 문서 업로드 Webhook 수신, 인덱싱 트리거</title>
+          <rect class="node-box" x="130" y="110" width="160" height="50" fill="url(#gApp)" stroke="rgba(6,182,212,0.4)"/>
+          <text class="node-text" x="210" y="132">Ingestion API</text>
+          <text class="node-sub" x="210" y="148">문서 인덱싱</text>
+        </g>
+        <g class="arch-node"><title>MCP Server (Node.js) — Claude/Cursor 연동 프로토콜 서버</title>
+          <rect class="node-box" x="380" y="110" width="160" height="50" fill="url(#gApp)" stroke="rgba(6,182,212,0.4)"/>
+          <text class="node-text" x="460" y="132">MCP Server</text>
+          <text class="node-sub" x="460" y="148">Node.js</text>
+        </g>
+        <g class="arch-node"><title>ADK Agent — Vertex AI Reasoning Engine 기반 Gemini 연동</title>
+          <rect class="node-box" x="660" y="110" width="160" height="50" fill="url(#gApp)" stroke="rgba(6,182,212,0.4)"/>
+          <text class="node-text" x="740" y="132">ADK Agent</text>
+          <text class="node-sub" x="740" y="148">Vertex AI</text>
+        </g>
+
+        <!-- Layer 3: Core -->
+        <g class="arch-node"><title>Query API v3.8 — Hybrid Search + 3-Tier 권한 + Chunk Merge</title>
+          <rect class="node-box" x="355" y="220" width="180" height="50" fill="url(#gCore)" stroke="rgba(139,92,246,0.4)"/>
+          <text class="node-text" x="445" y="242">Query API</text>
+          <text class="node-sub" x="445" y="258">RAG 검색 v3.8</text>
+        </g>
+        <g class="arch-node"><title>Keycloak — SSO 인증, JWT 발급, 그룹/부서 권한 관리</title>
+          <rect class="node-box" x="660" y="220" width="160" height="50" fill="url(#gCore)" stroke="rgba(139,92,246,0.4)"/>
+          <text class="node-text" x="740" y="242">Keycloak</text>
+          <text class="node-sub" x="740" y="258">SSO 인증</text>
+        </g>
+
+        <!-- Layer 4: Data -->
+        <g class="arch-node"><title>Celery Workers x2 — 비동기 문서 처리 (텍스트 추출, 청킹, 임베딩)</title>
+          <rect class="node-box" x="130" y="320" width="170" height="50" fill="url(#gData)" stroke="rgba(16,185,129,0.4)"/>
+          <text class="node-text" x="215" y="342">Celery Workers</text>
+          <text class="node-sub" x="215" y="358">비동기 처리 ×2</text>
+        </g>
+        <g class="arch-node"><title>Weaviate 1.24 — Hybrid Search 내장 벡터 DB, 2,598 청크 저장</title>
+          <rect class="node-box" x="380" y="320" width="170" height="50" fill="url(#gData)" stroke="rgba(16,185,129,0.4)"/>
+          <text class="node-text" x="465" y="342">Weaviate</text>
+          <text class="node-sub" x="465" y="358">벡터 DB</text>
+        </g>
+        <g class="arch-node"><title>Redis 7 — 권한 캐시 (TTL 5분), Keycloak 그룹/부서 정보</title>
+          <rect class="node-box" x="660" y="320" width="170" height="50" fill="url(#gData)" stroke="rgba(16,185,129,0.4)"/>
+          <text class="node-text" x="745" y="342">Redis</text>
+          <text class="node-sub" x="745" y="358">권한 캐시</text>
+        </g>
+
+        <!-- Layer 5: AI/ML -->
+        <g class="arch-node"><title>Embedding Service — GPU 가속 E5-large Multilingual, ~0.1초/청크</title>
+          <rect class="node-box" x="130" y="420" width="200" height="50" fill="url(#gAI)" stroke="rgba(245,158,11,0.4)"/>
+          <text class="node-text" x="230" y="442">Embedding Service</text>
+          <text class="node-sub" x="230" y="458">GPU + E5-large</text>
+        </g>
+
+        <!-- Connection Lines -->
+        <line class="flow-line" x1="215" y1="64" x2="210" y2="110" stroke="#38bdf8" marker-end="url(#ah)"/>
+        <line class="flow-line" x1="480" y1="64" x2="460" y2="110" stroke="#38bdf8" marker-end="url(#ah)"/>
+        <line class="flow-line" x1="750" y1="64" x2="740" y2="110" stroke="#38bdf8" marker-end="url(#ah)"/>
+        <line class="flow-line" x1="460" y1="160" x2="445" y2="220" stroke="#38bdf8" marker-end="url(#ah)"/>
+        <line class="flow-line" x1="740" y1="160" x2="520" y2="220" stroke="#38bdf8" marker-end="url(#ah)"/>
+        <line class="flow-line" x1="660" y1="245" x2="535" y2="245" stroke="#c084fc" marker-end="url(#ah)"/>
+        <line class="flow-line" x1="210" y1="160" x2="215" y2="320" stroke="#38bdf8" marker-end="url(#ah)"/>
+        <line class="flow-line" x1="445" y1="270" x2="465" y2="320" stroke="#38bdf8" marker-end="url(#ah)"/>
+        <path class="flow-line" d="M 500 270 Q 620 295 680 320" stroke="#38bdf8" fill="none" marker-end="url(#ah)"/>
+        <line class="flow-line" x1="215" y1="370" x2="230" y2="420" stroke="#38bdf8" marker-end="url(#ah)"/>
+      </svg>
+    </div>
+
+    <!-- Data Pipelines -->
+    <div class="pipeline-grid reveal">
+      <div class="pipeline-card">
+        <div class="pipeline-title">
+          <span class="pipe-icon" style="background:rgba(6,182,212,0.15);color:var(--accent-cyan)">⬇</span>
+          인덱싱 파이프라인
+        </div>
+        <div class="flow-steps">
+          <div class="flow-step"><div><div class="step-name">문서 업로드</div><div class="step-detail">Paperless UI → Webhook 트리거</div></div></div>
+          <div class="flow-step"><div><div class="step-name">텍스트 추출</div><div class="step-detail">Tika / Gotenberg (Office 문서 파싱)</div></div></div>
+          <div class="flow-step"><div><div class="step-name">MIME 분기 + Custom Parser</div><div class="step-detail">libmagic 오감지 교정</div></div></div>
+          <div class="flow-step"><div><div class="step-name">5-Phase 하이브리드 청킹</div><div class="step-detail">v2.2 — 소형 청크 완전 제거</div></div></div>
+          <div class="flow-step"><div><div class="step-name">GPU 임베딩 생성</div><div class="step-detail">E5-large + NVIDIA GPU (~0.1초/청크)</div></div></div>
+          <div class="flow-step"><div><div class="step-name">Weaviate 저장</div><div class="step-detail">벡터 + 메타데이터 인덱싱 완료</div></div></div>
+        </div>
+      </div>
+
+      <div class="pipeline-card">
+        <div class="pipeline-title">
+          <span class="pipe-icon" style="background:rgba(139,92,246,0.15);color:var(--accent-violet)">🔍</span>
+          검색 파이프라인 <span style="font-size:0.7rem;color:var(--text-muted);font-family:var(--font-mono);margin-left:8px">v3.8</span>
+        </div>
+        <div class="flow-steps">
+          <div class="flow-step"><div><div class="step-name">사용자 질문 수신</div><div class="step-detail">MCP / ADK / Open WebUI 등</div></div></div>
+          <div class="flow-step"><div><div class="step-name">JWT 검증 + 권한 로드</div><div class="step-detail">Keycloak → Redis 캐시 (TTL 5분)</div></div></div>
+          <div class="flow-step"><div><div class="step-name">Hybrid Search</div><div class="step-detail">Vector 70% + BM25 30%</div></div></div>
+          <div class="flow-step"><div><div class="step-name">3-Tier 권한 필터</div><div class="step-detail">그룹 → 부서 → 민감도</div></div></div>
+          <div class="flow-step"><div><div class="step-name">Chunk Merge + fileName Boost</div><div class="step-detail">문서당 상위 3청크 병합, 파일명 +0.15</div></div></div>
+          <div class="flow-step"><div><div class="step-name">Score Threshold → 응답</div><div class="step-detail">0.60 미만 필터링 → top_k 반환</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 3. Core Features ==================== -->
+<section id="core" class="section">
+  <div class="container">
+    <div class="section-label">Core Implementation</div>
+    <h2 class="section-title">핵심 <span class="gradient-text">구현 요소</span></h2>
+    <p class="section-desc">권한 기반 검색, 다중 클라이언트 지원, Hybrid Search 엔진의 세 축으로 구성</p>
+
+    <div class="grid-3 reveal">
+      <!-- 3-Tier Permission -->
+      <div class="card feature-card">
+        <div class="feature-icon" style="background:rgba(139,92,246,0.15);color:var(--accent-violet)">🔐</div>
+        <h3>3-Tier 권한 모델</h3>
+        <p>문서 민감도에 따라 검색 결과를 실시간 필터링하는 3단계 권한 체계</p>
+        <div class="tier-stack">
+          <div class="tier-item" style="background:rgba(59,130,246,0.1);border-left:3px solid var(--accent-blue)">
+            Tier 1 — 그룹 기반 <span>Paperless ↔ Keycloak 동기화</span>
+          </div>
+          <div class="tier-item" style="background:rgba(139,92,246,0.1);border-left:3px solid var(--accent-violet)">
+            Tier 2 — 부서 기반 <span>조직 구조 필터링</span>
+          </div>
+          <div class="tier-item" style="background:rgba(244,63,94,0.1);border-left:3px solid var(--accent-rose)">
+            Tier 3 — 민감도 기반 <span>low → confidential</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Multi-client -->
+      <div class="card feature-card">
+        <div class="feature-icon" style="background:rgba(6,182,212,0.15);color:var(--accent-cyan)">🔗</div>
+        <h3>멀티 클라이언트 연동</h3>
+        <p>단일 RAG 백엔드로 4종 클라이언트를 동시 지원</p>
+        <div class="client-grid">
+          <div class="client-item"><span class="ci-icon">💎</span> Gemini Enterprise<br><small style="color:var(--text-muted)">ADK Agent</small></div>
+          <div class="client-item"><span class="ci-icon">🤖</span> Claude Desktop<br><small style="color:var(--text-muted)">MCP Server</small></div>
+          <div class="client-item"><span class="ci-icon">⌨️</span> Cursor IDE<br><small style="color:var(--text-muted)">MCP Server</small></div>
+          <div class="client-item"><span class="ci-icon">💬</span> Open WebUI<br><small style="color:var(--text-muted)">OpenAI 호환</small></div>
+        </div>
+      </div>
+
+      <!-- Hybrid Search -->
+      <div class="card feature-card">
+        <div class="feature-icon" style="background:rgba(16,185,129,0.15);color:var(--accent-emerald)">⚡</div>
+        <h3>Hybrid Search 엔진</h3>
+        <p>의미 검색과 키워드 정확도를 동시에 확보하는 7:3 결합 검색</p>
+        <div class="hybrid-bar-container">
+          <div class="hybrid-bar">
+            <div class="hb-vector">Vector 70%</div>
+            <div class="hb-bm25">BM25 30%</div>
+          </div>
+          <div class="hybrid-legend">
+            <span class="vec">의미 유사도 검색</span>
+            <span class="kw">키워드 매칭</span>
+          </div>
+        </div>
+        <div style="margin-top:14px;font-size:0.82rem;color:var(--text-secondary);">
+          <div style="margin-bottom:4px">✓ "휴가 정책" ↔ "연차 규정" 의미 매칭</div>
+          <div>✓ 사람 이름, 제품명 키워드 정확 매칭</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 4. Problem Solving Cases ==================== -->
+<section id="cases" class="section">
+  <div class="container">
+    <div class="section-label">Problem Solving</div>
+    <h2 class="section-title">문제 해결 <span class="gradient-text">사례</span></h2>
+    <p class="section-desc">문제 발견 → 분석 → 해결 → 검증 사이클을 반복하며 시스템 품질을 높인 핵심 사례</p>
+
+    <div class="cases-grid">
+
+      <!-- Case 1: GPU -->
+      <div class="case-card reveal">
+        <div class="case-header">
+          <span class="case-number" style="background:rgba(245,158,11,0.15);color:var(--accent-amber)">CASE 01</span>
+          <h3>임베딩 처리 속도 문제 → GPU 가속 도입</h3>
+        </div>
+        <div class="case-body">
+          <div class="case-flow">
+            <div class="case-flow-step">
+              <div class="cfs-label">문제</div>
+              <div class="cfs-text">CPU 기반 임베딩<br>~2초/청크</div>
+            </div>
+            <div class="case-flow-step">
+              <div class="cfs-label">분석</div>
+              <div class="cfs-text">임베딩 생성이<br>전체의 97% 차지</div>
+            </div>
+            <div class="case-flow-step">
+              <div class="cfs-label">해결</div>
+              <div class="cfs-text">NVIDIA GPU<br>커스텀 이미지 빌드</div>
+            </div>
+            <div class="case-flow-step">
+              <div class="cfs-label">검증</div>
+              <div class="cfs-text" style="color:var(--accent-emerald)">20x 속도 향상<br>~0.1초/청크</div>
+            </div>
+          </div>
+          <div class="bar-chart">
+            <div class="bar-row">
+              <span class="bar-label">CPU</span>
+              <div class="bar-track"><div class="bar-fill cpu">~2초/청크 · 100청크 = 204초</div></div>
+            </div>
+            <div class="bar-row">
+              <span class="bar-label">GPU</span>
+              <div class="bar-track"><div class="bar-fill gpu">~0.1초</div></div>
+            </div>
+          </div>
+          <div class="stats-row">
+            <div class="stat-chip"><span class="sc-val" style="color:var(--accent-amber)">20x</span> 청크당 속도</div>
+            <div class="stat-chip"><span class="sc-val" style="color:var(--accent-amber)">13.6x</span> 문서 인덱싱</div>
+            <div class="stat-chip"><span class="sc-val" style="color:var(--accent-amber)">14x</span> 전체 재인덱싱</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Case 2: Query API -->
+      <div class="case-card reveal">
+        <div class="case-header">
+          <span class="case-number" style="background:rgba(59,130,246,0.15);color:var(--accent-blue)">CASE 02</span>
+          <h3>검색 결과 품질 저하 → Query API 5단계 반복 개선 (v3.3 → v3.8)</h3>
+        </div>
+        <div class="case-body">
+          <div class="version-timeline">
+            <div class="vt-step"><div class="vt-ver">v3.3</div><div class="vt-desc">Hybrid Search<br>벡터+BM25 결합</div></div>
+            <div class="vt-step"><div class="vt-ver">v3.4</div><div class="vt-desc">Score Threshold<br>0.60 미만 제거</div></div>
+            <div class="vt-step"><div class="vt-ver">v3.6</div><div class="vt-desc">Pre-filtering<br>Weaviate where절</div></div>
+            <div class="vt-step"><div class="vt-ver">v3.7</div><div class="vt-desc">fileName Boost<br>파일명 매칭 +0.15</div></div>
+            <div class="vt-step"><div class="vt-ver">v3.8</div><div class="vt-desc">Chunk Merge<br>문서당 3청크 병합</div></div>
+          </div>
+          <table class="result-table" style="margin-top:20px">
+            <thead><tr><th>버전</th><th>해결한 문제</th><th>효과</th></tr></thead>
+            <tbody>
+              <tr><td style="font-family:var(--font-mono);color:var(--accent-blue)">v3.3</td><td>키워드 검색 실패</td><td>의미 + 키워드 동시 검색</td></tr>
+              <tr><td style="font-family:var(--font-mono);color:var(--accent-blue)">v3.4</td><td>무관한 저점수 결과 노출</td><td>노이즈 제거</td></tr>
+              <tr><td style="font-family:var(--font-mono);color:var(--accent-blue)">v3.6</td><td>태그/유형 필터링 불가</td><td>검색 범위 사전 축소</td></tr>
+              <tr><td style="font-family:var(--font-mono);color:var(--accent-blue)">v3.7</td><td>파일명 매칭 문서 저순위</td><td>관련 문서 상위 노출</td></tr>
+              <tr><td style="font-family:var(--font-mono);color:var(--accent-blue)">v3.8</td><td>문서당 1청크만 반환</td><td class="highlight">LLM 컨텍스트 5배 확장</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Case 3: Chunking -->
+      <div class="case-card reveal">
+        <div class="case-header">
+          <span class="case-number" style="background:rgba(16,185,129,0.15);color:var(--accent-emerald)">CASE 03</span>
+          <h3>소형 청크 품질 문제 → 5-Phase 하이브리드 청킹 v2.2</h3>
+        </div>
+        <div class="case-body">
+          <div class="case-flow">
+            <div class="case-flow-step">
+              <div class="cfs-label">문제</div>
+              <div class="cfs-text">10.7% 청크가<br>100자 미만</div>
+            </div>
+            <div class="case-flow-step">
+              <div class="cfs-label">원인</div>
+              <div class="cfs-text">모든 헤더에서<br>무조건 분할</div>
+            </div>
+            <div class="case-flow-step">
+              <div class="cfs-label">해결</div>
+              <div class="cfs-text">5-Phase<br>하이브리드 청킹</div>
+            </div>
+            <div class="case-flow-step">
+              <div class="cfs-label">검증</div>
+              <div class="cfs-text" style="color:var(--accent-emerald)">200자 미만 0%<br>완전 제거</div>
+            </div>
+          </div>
+
+          <div class="phase-pipeline">
+            <div class="phase-step"><div class="phase-num">PHASE 1</div><div class="phase-name">헤더 기반 분할</div></div>
+            <div class="phase-step"><div class="phase-num">PHASE 2</div><div class="phase-name">Forward/Backward Merge</div></div>
+            <div class="phase-step"><div class="phase-num">PHASE 3</div><div class="phase-name">CCH Breadcrumb</div></div>
+            <div class="phase-step"><div class="phase-num">PHASE 4</div><div class="phase-name">대형 청크 재분할</div></div>
+            <div class="phase-step"><div class="phase-num">PHASE 5</div><div class="phase-name">Final Cleanup</div></div>
+          </div>
+
+          <table class="result-table">
+            <thead><tr><th>지표</th><th>Before</th><th>After v2.2</th><th>변화</th></tr></thead>
+            <tbody>
+              <tr><td>총 청크 수</td><td>2,946</td><td>2,598</td><td>-12%</td></tr>
+              <tr><td>평균 크기</td><td>351자</td><td>515자</td><td class="highlight">+47%</td></tr>
+              <tr><td>최소 크기</td><td>12자</td><td>200자</td><td class="highlight">+1,567%</td></tr>
+              <tr><td>100자 미만</td><td>316 (10.7%)</td><td style="color:var(--accent-emerald);font-weight:700">0 (0.0%)</td><td class="highlight">완전 제거</td></tr>
+              <tr><td>Breadcrumb 포함</td><td>0 (0%)</td><td>2,461 (94.7%)</td><td class="highlight">신규 적용</td></tr>
+            </tbody>
+          </table>
+
+          <div class="stats-row" style="margin-top:12px">
+            <div class="stat-chip"><span class="sc-val" style="color:var(--accent-emerald)">Unstructured.io</span> Phase 2 참고</div>
+            <div class="stat-chip"><span class="sc-val" style="color:var(--accent-emerald)">CCH</span> +27.9% 정확도</div>
+            <div class="stat-chip"><span class="sc-val" style="color:var(--accent-emerald)">LangChain</span> 라인 병합 참고</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 5. ADK Agent ==================== -->
+<section id="adk" class="section">
+  <div class="container">
+    <div class="section-label">Enterprise Integration</div>
+    <h2 class="section-title">ADK Agent <span class="gradient-text">Gemini 연동</span></h2>
+    <p class="section-desc">Google Gemini Enterprise에서 사내 문서를 자연어로 검색하고 전문가 수준의 답변을 받을 수 있도록 연동</p>
+
+    <div class="adk-flow reveal">
+      <div class="adk-node">
+        <div class="an-title">Gemini App</div>
+        <div class="an-sub">사용자 UI</div>
+      </div>
+      <div class="adk-arrow">→</div>
+      <div class="adk-node">
+        <div class="an-title">Agent Builder</div>
+        <div class="an-sub">Vertex AI</div>
+      </div>
+      <div class="adk-arrow">→</div>
+      <div class="adk-node" style="border-color:rgba(139,92,246,0.4)">
+        <div class="an-title">ADK Agent</div>
+        <div class="an-sub">Reasoning Engine</div>
+      </div>
+      <div class="adk-arrow">→</div>
+      <div class="adk-node">
+        <div class="an-title">OAuth → UserInfo</div>
+        <div class="an-sub">이메일 추출</div>
+      </div>
+      <div class="adk-arrow">→</div>
+      <div class="adk-node" style="border-color:rgba(16,185,129,0.4)">
+        <div class="an-title">Query API + Weaviate</div>
+        <div class="an-sub">RAG 검색</div>
+      </div>
+    </div>
+
+    <div class="card reveal" style="overflow-x:auto">
+      <h3 style="font-family:var(--font-display);font-weight:700;margin-bottom:16px;">E2E 테스트 결과</h3>
+      <table class="test-table">
+        <thead>
+          <tr><th>테스트 질문</th><th>Tool 호출</th><th>검색 문서</th><th>최상위 Score</th><th>답변 길이</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>"prompt engineering 주요 기법 정리"</td>
+            <td style="font-family:var(--font-mono);font-size:0.82rem">search_rag (top_k=10)</td>
+            <td>10개</td>
+            <td style="font-family:var(--font-mono);font-weight:700">0.850</td>
+            <td style="font-family:var(--font-mono);font-weight:700;color:var(--accent-emerald)">4,027자</td>
+          </tr>
+          <tr>
+            <td>"나노바나나 Grounding 기능 설명"</td>
+            <td style="font-family:var(--font-mono);font-size:0.82rem">search_rag (top_k=10)</td>
+            <td>10개</td>
+            <td style="font-family:var(--font-mono);font-weight:700;color:var(--accent-amber)">1.077</td>
+            <td style="font-family:var(--font-mono);font-weight:700;color:var(--accent-emerald)">3,728자</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 6. Technical Decisions ==================== -->
+<section id="decisions" class="section">
+  <div class="container">
+    <div class="section-label">Technical Decisions</div>
+    <h2 class="section-title">기술적 <span class="gradient-text">의사결정</span></h2>
+    <p class="section-desc">각 기술 선택의 근거와 검토 후 보류한 기술들의 이유</p>
+
+    <div class="card reveal" style="overflow-x:auto;margin-bottom:32px">
+      <h3 style="font-family:var(--font-display);font-weight:700;margin-bottom:16px;">주요 기술 선택</h3>
+      <table class="dec-table">
+        <thead><tr><th>결정 사항</th><th>선택</th><th>대안 (미채택)</th><th>선택 이유</th></tr></thead>
+        <tbody>
+          <tr><td>벡터 DB</td><td class="chosen">Weaviate</td><td class="alt">Pinecone, Milvus</td><td>Hybrid Search 내장, 스키마 유연, 자체 호스팅</td></tr>
+          <tr><td>검색 방식</td><td class="chosen">Hybrid (7:3)</td><td class="alt">Vector only, BM25 only</td><td>의미 검색 + 키워드 정확도 동시 확보</td></tr>
+          <tr><td>임베딩 모델</td><td class="chosen">E5-large Multilingual</td><td class="alt">OpenAI ada, BGE-M3</td><td>다국어, 자체 호스팅(비용 절감), GPU 가속</td></tr>
+          <tr><td>청킹</td><td class="chosen">5-Phase 하이브리드</td><td class="alt">시맨틱, Late Chunking</td><td>비용 효율적, 마크다운 구조 활용 극대화</td></tr>
+          <tr><td>메시지 큐</td><td class="chosen">Celery + RabbitMQ</td><td class="alt">Kafka</td><td>50명 규모에 적합, 운영 단순</td></tr>
+          <tr><td>문서 관리</td><td class="chosen">Paperless-ngx</td><td class="alt">자체 개발</td><td>사용자 친화적 UI, 활발한 오픈소스</td></tr>
+          <tr><td>인증</td><td class="chosen">Keycloak</td><td class="alt">Auth0, 자체 구현</td><td>SSO 표준, 그룹 관리, 자체 호스팅</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card reveal">
+      <h3 style="font-family:var(--font-display);font-weight:700;margin-bottom:16px;">검토 후 보류한 기술</h3>
+      <div class="dec-held">
+        <div class="dec-held-item">
+          <div class="dhi-tech">Semantic Chunking</div>
+          <div class="dhi-reason">청킹 시점 임베딩 API 호출 비용 추가, 구조화 문서에서 효과 불확실 → 비구조화 문서 증가 시 재검토</div>
+        </div>
+        <div class="dec-held-item">
+          <div class="dhi-tech">Late Chunking (Jina)</div>
+          <div class="dhi-reason">임베딩 인프라 전면 교체 필요, 호환성 문제 → 차세대 버전에서 검토</div>
+        </div>
+        <div class="dec-held-item">
+          <div class="dhi-tech">Agentic Chunking</div>
+          <div class="dhi-reason">문서당 LLM 수백 회 호출, 인덱싱 비용 폭증 → ROI 개선 시 재검토</div>
+        </div>
+        <div class="dec-held-item">
+          <div class="dhi-tech">Parent-Child 구조</div>
+          <div class="dhi-reason">근본 원인(소형 청크)을 우회하는 방식 → v2.2로 근본 해결 완료</div>
+        </div>
+        <div class="dec-held-item">
+          <div class="dhi-tech">Reranker (Cross-encoder)</div>
+          <div class="dhi-reason">현재 Hybrid+CCH 조합으로 충분한 품질 확보 → 정밀도 추가 필요 시 도입</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 7. Final Status ==================== -->
+<section id="status" class="section">
+  <div class="container">
+    <div class="section-label">Current Status</div>
+    <h2 class="section-title">최종 시스템 <span class="gradient-text">현황</span></h2>
+    <p class="section-desc">운영 중인 시스템 상태 대시보드</p>
+
+    <div class="status-grid reveal">
+      <div class="status-card">
+        <div class="sc-category">시스템 현황</div>
+        <div class="status-item"><span class="si-label">Query API 버전</span><span class="si-value" style="color:var(--accent-blue)">v3.8.0</span></div>
+        <div class="status-item"><span class="si-label">청킹 엔진 버전</span><span class="si-value">v2.2</span></div>
+        <div class="status-item"><span class="si-label">ADK Agent 모델</span><span class="si-value">gemini-2.5-pro</span></div>
+        <div class="status-item"><span class="si-label">Namespace</span><span class="si-value">rag-system</span></div>
+        <div class="status-item"><span class="si-label">총 Pod</span><span class="si-value" style="color:var(--accent-cyan)">18개</span></div>
+      </div>
+      <div class="status-card">
+        <div class="sc-category">데이터 현황</div>
+        <div class="status-item"><span class="si-label">인덱싱된 문서</span><span class="si-value">25개</span></div>
+        <div class="status-item"><span class="si-label">총 청크 수</span><span class="si-value" style="color:var(--accent-violet)">2,598개</span></div>
+        <div class="status-item"><span class="si-label">평균 청크 크기</span><span class="si-value">515자</span></div>
+        <div class="status-item"><span class="si-label">최소 청크 크기</span><span class="si-value">200자</span></div>
+        <div class="status-item"><span class="si-label">200자 미만 청크</span><span class="si-value" style="color:var(--accent-emerald)">0개 (0%)</span></div>
+        <div class="status-item"><span class="si-label">Breadcrumb 포함</span><span class="si-value">94.7%</span></div>
+      </div>
+      <div class="status-card">
+        <div class="sc-category">성능</div>
+        <div class="status-item"><span class="si-label">검색 응답 시간</span><span class="si-value" style="color:var(--accent-emerald)">&lt; 1초</span></div>
+        <div class="status-item"><span class="si-label">문서 인덱싱</span><span class="si-value">~15초/문서</span></div>
+        <div class="status-item"><span class="si-label">임베딩 생성</span><span class="si-value">~0.1초/청크</span></div>
+        <div class="status-item"><span class="si-label">ADK 답변 생성</span><span class="si-value">~10초</span></div>
+      </div>
+    </div>
+
+    <!-- Design Philosophy -->
+    <div class="grid-2 reveal" style="margin-top:32px">
+      <div class="card">
+        <h3 style="font-family:var(--font-display);font-weight:700;margin-bottom:16px;">설계 철학</h3>
+        <div style="display:flex;flex-direction:column;gap:12px;font-size:0.9rem;">
+          <div style="padding:12px;background:rgba(255,255,255,0.02);border-radius:8px;border-left:3px solid var(--accent-blue)">
+            <strong>"완벽한 가용성"</strong> 대신 <strong style="color:var(--accent-cyan)">"신속한 복구"</strong>
+            <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px">RTO 30분, 일일 백업, 1-2명 운영</div>
+          </div>
+          <div style="padding:12px;background:rgba(255,255,255,0.02);border-radius:8px;border-left:3px solid var(--accent-violet)">
+            <strong>"복잡한 클러스터링"</strong> 대신 <strong style="color:var(--accent-cyan)">"강력한 백업"</strong>
+            <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px">HA 제거, PostgreSQL 단일 + pg_dump</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h3 style="font-family:var(--font-display);font-weight:700;margin-bottom:16px;">인프라 규모</h3>
+        <div style="display:flex;flex-direction:column;gap:12px;font-size:0.9rem;">
+          <div style="padding:12px;background:rgba(255,255,255,0.02);border-radius:8px;border-left:3px solid var(--accent-emerald)">
+            <strong>"분산 시스템"</strong> 대신 <strong style="color:var(--accent-cyan)">"단순한 구조"</strong>
+            <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px">Kafka → Celery+RabbitMQ, MinIO → NFS</div>
+          </div>
+          <div style="padding:12px;background:rgba(255,255,255,0.02);border-radius:8px;border-left:3px solid var(--accent-amber)">
+            <strong>"엔터프라이즈 급"</strong> 대신 <strong style="color:var(--accent-cyan)">"비즈니스 적합"</strong>
+            <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px">50명에게 맞는 현실적 규모</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== Footer ==================== -->
+<footer>
+  <div class="container">
+    <div class="footer-logo"><span class="gradient-text">RAG System</span></div>
+    <p>사내 AI 문서 검색 시스템 포트폴리오</p>
+  </div>
+</footer>
+
+<!-- ==================== JavaScript ==================== -->
+<script>
+(function() {
+  // Intersection Observer for reveal animations
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('active');
+        // Trigger bar chart animation
+        const bars = entry.target.querySelectorAll('.bar-chart');
+        bars.forEach(b => b.classList.add('active'));
+      }
+    });
+  }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // Counter animation
+  function animateCounter(el, from, to, duration, prefix, suffix) {
+    const start = performance.now();
+    const isDecimal = String(to).includes('.');
+    function update(now) {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      let current;
+      if (from > to) {
+        current = from - (from - to) * eased;
+      } else {
+        current = from + (to - from) * eased;
+      }
+      el.textContent = (prefix || '') + (isDecimal ? current.toFixed(1) : Math.round(current)) + (suffix || '');
+      if (progress < 1) requestAnimationFrame(update);
+    }
+    requestAnimationFrame(update);
+  }
+
+  const counterObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting && !entry.target.dataset.animated) {
+        entry.target.dataset.animated = 'true';
+        const el = entry.target;
+        const to = parseFloat(el.dataset.count);
+        const from = el.dataset.from ? parseFloat(el.dataset.from) : 0;
+        const prefix = el.dataset.prefix || '';
+        const suffix = el.dataset.suffix || '';
+        animateCounter(el, from, to, 1200, prefix, suffix);
+      }
+    });
+  }, { threshold: 0.5 });
+
+  document.querySelectorAll('[data-count]').forEach(el => counterObserver.observe(el));
+
+  // Active nav state on scroll
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.nav-links a');
+
+  function updateNav() {
+    const scrollY = window.scrollY + 120;
+    sections.forEach(section => {
+      const top = section.offsetTop;
+      const height = section.offsetHeight;
+      const id = section.getAttribute('id');
+      if (scrollY >= top && scrollY < top + height) {
+        navLinks.forEach(link => {
+          link.classList.toggle('active', link.getAttribute('href') === '#' + id);
+        });
+      }
+    });
+  }
+  window.addEventListener('scroll', updateNav, { passive: true });
+  updateNav();
+
+  // Close mobile menu on link click
+  navLinks.forEach(link => {
+    link.addEventListener('click', () => {
+      document.querySelector('.nav-links').classList.remove('open');
+    });
+  });
+})();
+</script>
+
+</body>
+</html>

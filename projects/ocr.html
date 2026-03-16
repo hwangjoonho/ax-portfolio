@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OCR System Portfolio</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+  :root {
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --surface2: #f1f5f9;
+    --surface3: #e2e8f0;
+    --border: #e2e8f0;
+    --border2: #cbd5e1;
+    --text: #0f172a;
+    --text2: #475569;
+    --text3: #64748b;
+    --accent: #2563eb;
+    --accent-light: #dbeafe;
+    --accent2: #7c3aed;
+    --accent2-light: #ede9fe;
+    --green: #059669;
+    --green-light: #d1fae5;
+    --red: #dc2626;
+    --red-light: #fee2e2;
+    --orange: #d97706;
+    --orange-light: #fef3c7;
+    --cyan: #0891b2;
+    --cyan-light: #cffafe;
+    --pink: #db2777;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,.05);
+    --shadow: 0 1px 3px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,.1), 0 2px 4px -2px rgba(0,0,0,.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -4px rgba(0,0,0,.1);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; line-height:1.7; padding-top: 48px; }
+  .container { max-width:1140px; margin:0 auto; padding:0 28px; }
+
+  /* Hero */
+  .hero { padding:72px 0 48px; text-align:center; position:relative; overflow:hidden; background:linear-gradient(180deg, #eef2ff 0%, var(--bg) 100%); }
+  .hero::before { content:''; position:absolute; top:-300px; left:50%; transform:translateX(-50%); width:900px; height:900px; background:radial-gradient(circle,rgba(37,99,235,.06) 0%,transparent 70%); pointer-events:none; }
+  .hero h1 { font-size:2.8rem; font-weight:900; letter-spacing:-.03em; color:var(--text); margin-bottom:14px; }
+  .hero h1 span { background:linear-gradient(135deg,var(--accent),var(--accent2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+  .hero p { font-size:1.05rem; color:var(--text2); max-width:700px; margin:0 auto; line-height:1.8; }
+  .badge-row { display:flex; gap:8px; justify-content:center; margin-top:24px; flex-wrap:wrap; }
+  .badge { padding:5px 14px; border-radius:20px; font-size:.75rem; font-weight:600; border:1px solid var(--border); background:var(--surface); color:var(--text3); box-shadow:var(--shadow-sm); }
+  .badge.blue { border-color:var(--accent-light); color:var(--accent); background:var(--accent-light); }
+  .badge.purple { border-color:var(--accent2-light); color:var(--accent2); background:var(--accent2-light); }
+  .badge.green { border-color:var(--green-light); color:var(--green); background:var(--green-light); }
+
+  /* Section */
+  section { padding:56px 0; }
+  .section-label { font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.12em; color:var(--accent); margin-bottom:6px; }
+  .section-title { font-size:1.75rem; font-weight:800; margin-bottom:28px; color:var(--text); letter-spacing:-.02em; }
+  .section-divider { height:1px; background:var(--border); margin:0; }
+
+  /* ===== SYSTEM OVERVIEW DIAGRAM ===== */
+  .overview-section { padding:56px 0 40px; background:var(--surface); border-bottom:1px solid var(--border); }
+  .overview-diagram { position:relative; }
+
+  /* Top clients row */
+  .clients-row { display:flex; justify-content:center; gap:12px; flex-wrap:wrap; margin-bottom:24px; }
+  .client-chip { display:flex; align-items:center; gap:6px; padding:8px 16px; background:var(--accent-light); border:1px solid rgba(37,99,235,.2); border-radius:24px; font-size:.8rem; font-weight:600; color:var(--accent); }
+  .client-chip .c-icon { font-size:1rem; }
+
+  /* Big arrow down */
+  .big-arrow { text-align:center; padding:8px 0; }
+  .big-arrow .arrow-line { display:inline-block; width:2px; height:20px; background:var(--border2); }
+  .big-arrow .arrow-head { display:block; font-size:14px; color:var(--text3); line-height:1; }
+  .big-arrow .arrow-label { display:block; font-size:.7rem; color:var(--text3); font-weight:600; margin-top:2px; }
+
+  /* Two-column server layout */
+  .server-layout { display:grid; grid-template-columns:1fr 60px 1fr; gap:0; align-items:start; margin-top:8px; }
+  @media(max-width:800px) { .server-layout { grid-template-columns:1fr; gap:20px; } .server-connector { display:none; } }
+
+  .server-box { background:var(--surface); border:2px solid var(--border); border-radius:16px; overflow:hidden; box-shadow:var(--shadow-md); }
+  .server-box-header { padding:14px 20px; font-weight:700; font-size:.85rem; display:flex; align-items:center; gap:8px; }
+  .server-box-header .indicator { width:8px; height:8px; border-radius:50%; }
+  .server-box-header .tag { margin-left:auto; font-size:.65rem; font-weight:600; padding:2px 8px; border-radius:10px; }
+  .server-box-body { padding:0 20px 20px; }
+
+  .sol-box .server-box-header { background:linear-gradient(135deg,#eff6ff,#f0f9ff); border-bottom:1px solid #dbeafe; }
+  .sol-box .server-box-header .indicator { background:var(--accent); }
+  .sol-box .server-box-header .tag { background:#dbeafe; color:var(--accent); }
+
+  .dgx-box .server-box-header { background:linear-gradient(135deg,#f0fdf4,#ecfdf5); border-bottom:1px solid #d1fae5; }
+  .dgx-box .server-box-header .indicator { background:var(--green); }
+  .dgx-box .server-box-header .tag { background:#d1fae5; color:var(--green); }
+
+  .svc-item { display:flex; align-items:center; gap:10px; padding:10px 14px; background:var(--surface2); border:1px solid var(--border); border-radius:10px; margin-top:8px; font-size:.82rem; }
+  .svc-item .svc-icon { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:.85rem; font-weight:700; flex-shrink:0; }
+  .svc-item .svc-name { font-weight:600; color:var(--text); }
+  .svc-item .svc-desc { font-size:.75rem; color:var(--text3); }
+  .svc-item .svc-port { margin-left:auto; font-family:'JetBrains Mono',monospace; font-size:.72rem; color:var(--text3); font-weight:500; flex-shrink:0; }
+
+  .shared-badge { margin-top:12px; background:linear-gradient(135deg,#faf5ff,#ede9fe); border:1.5px dashed rgba(124,58,237,.3); border-radius:10px; padding:12px 16px; text-align:center; font-size:.82rem; color:var(--accent2); font-weight:600; }
+  .shared-badge small { display:block; font-size:.72rem; color:var(--text3); font-weight:400; margin-top:2px; }
+
+  /* Connector between servers */
+  .server-connector { display:flex; flex-direction:column; align-items:center; justify-content:center; padding-top:60px; }
+  .conn-line { width:40px; height:2px; background:var(--border2); position:relative; }
+  .conn-line::before, .conn-line::after { content:''; position:absolute; top:-3px; width:8px; height:8px; border-radius:50%; background:var(--border2); }
+  .conn-line::before { left:-4px; }
+  .conn-line::after { right:-4px; }
+  .conn-label { font-size:.65rem; font-weight:600; color:var(--text3); margin-top:4px; text-align:center; line-height:1.3; white-space:nowrap; }
+
+  /* Data flow row at bottom */
+  .flow-summary { display:flex; justify-content:center; gap:12px; flex-wrap:wrap; margin-top:28px; }
+  .flow-tag { display:inline-flex; align-items:center; gap:6px; padding:6px 14px; border-radius:8px; font-size:.78rem; font-weight:600; }
+  .flow-tag.good { background:var(--green-light); color:var(--green); }
+  .flow-tag.info { background:var(--accent-light); color:var(--accent); }
+  .flow-tag.warn { background:var(--orange-light); color:var(--orange); }
+
+  /* ===== ARCHITECTURE CARDS ===== */
+  .arch-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  @media(max-width:768px) { .arch-grid { grid-template-columns:1fr; } }
+  .arch-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:24px; box-shadow:var(--shadow); }
+  .arch-card h3 { font-size:1rem; font-weight:700; margin-bottom:4px; }
+  .arch-card .sub { font-size:.8rem; color:var(--text3); margin-bottom:16px; }
+  .arch-node { display:flex; gap:10px; margin-bottom:10px; align-items:center; }
+  .arch-node .dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+  .arch-node .label { font-size:.85rem; }
+  .arch-node .port { font-size:.75rem; color:var(--text3); margin-left:auto; font-family:'JetBrains Mono',monospace; }
+  .shared-vol { background:linear-gradient(135deg,rgba(37,99,235,.05),rgba(124,58,237,.05)); border:1.5px dashed rgba(124,58,237,.25); border-radius:8px; padding:12px 16px; margin-top:12px; text-align:center; font-size:.85rem; }
+
+  /* ===== FLOW DIAGRAM ===== */
+  .flow { display:flex; flex-direction:column; gap:0; align-items:center; margin:24px 0; }
+  .flow-step { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:14px 24px; text-align:center; min-width:320px; max-width:500px; width:100%; position:relative; box-shadow:var(--shadow-sm); }
+  .flow-step.problem { border-color:rgba(220,38,38,.25); background:var(--red-light); }
+  .flow-step.fail { border-color:rgba(217,119,6,.25); background:var(--orange-light); }
+  .flow-step.solution { border-color:rgba(5,150,105,.25); background:var(--green-light); }
+  .flow-step .step-label { font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; margin-bottom:4px; }
+  .flow-step .step-label.red { color:var(--red); }
+  .flow-step .step-label.orange { color:var(--orange); }
+  .flow-step .step-label.green { color:var(--green); }
+  .flow-step .step-label.blue { color:var(--accent); }
+  .flow-step .step-title { font-size:.95rem; font-weight:600; }
+  .flow-step .step-desc { font-size:.8rem; color:var(--text2); margin-top:4px; }
+  .flow-arrow { width:2px; height:24px; background:var(--border2); position:relative; }
+  .flow-arrow::after { content:'\25BC'; position:absolute; bottom:-8px; left:50%; transform:translateX(-50%); font-size:10px; color:var(--text3); }
+
+  /* ===== METRICS ===== */
+  .metrics { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-bottom:32px; }
+  .metric { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:22px; text-align:center; box-shadow:var(--shadow); }
+  .metric .value { font-size:2.2rem; font-weight:900; margin-bottom:4px; letter-spacing:-.02em; }
+  .metric .value.green { color:var(--green); }
+  .metric .value.blue { color:var(--accent); }
+  .metric .value.purple { color:var(--accent2); }
+  .metric .value.cyan { color:var(--cyan); }
+  .metric .desc { font-size:.8rem; color:var(--text2); }
+  .metric .desc small { color:var(--text3); }
+
+  /* ===== PROBLEM CARDS ===== */
+  .problem-grid { display:grid; gap:24px; }
+  .problem-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; box-shadow:var(--shadow); }
+  .problem-header { padding:18px 24px 14px; display:flex; align-items:center; gap:12px; border-bottom:1px solid var(--border); background:var(--surface2); }
+  .problem-num { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:.85rem; font-weight:800; background:var(--accent-light); color:var(--accent); flex-shrink:0; }
+  .problem-header h3 { font-size:1.02rem; font-weight:700; }
+  .problem-body { padding:20px 24px; }
+  .problem-body .tag { display:inline-block; font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; padding:3px 10px; border-radius:5px; margin-bottom:10px; }
+  .problem-body .tag.issue { background:var(--red-light); color:var(--red); }
+  .problem-body .tag.try { background:var(--orange-light); color:var(--orange); }
+  .problem-body .tag.fix { background:var(--green-light); color:var(--green); }
+  .problem-body p { font-size:.88rem; color:var(--text2); margin-bottom:8px; }
+  .problem-body code { background:var(--surface2); padding:2px 7px; border-radius:5px; font-size:.8rem; font-family:'JetBrains Mono',monospace; color:var(--accent); border:1px solid var(--border); }
+  .problem-body .result { margin-top:12px; padding:10px 14px; background:var(--green-light); border:1px solid rgba(5,150,105,.2); border-radius:8px; font-size:.85rem; color:var(--green); font-weight:500; }
+  .divider { height:1px; background:var(--border); margin:14px 0; }
+
+  /* ===== PIPELINE ===== */
+  .pipeline { display:flex; flex-direction:column; gap:0; align-items:center; }
+  .pipe-step { display:flex; align-items:center; gap:16px; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:14px 20px; width:100%; max-width:560px; box-shadow:var(--shadow-sm); }
+  .pipe-step .pipe-icon { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1rem; font-weight:800; flex-shrink:0; }
+  .pipe-step .pipe-info h4 { font-size:.9rem; font-weight:600; }
+  .pipe-step .pipe-info p { font-size:.78rem; color:var(--text3); }
+  .pipe-arrow { width:2px; height:16px; background:var(--border2); }
+
+  /* ===== COMPARISON TABLE ===== */
+  .compare-table { width:100%; border-collapse:separate; border-spacing:0; font-size:.88rem; background:var(--surface); border-radius:14px; overflow:hidden; box-shadow:var(--shadow); border:1px solid var(--border); }
+  .compare-table th { padding:14px 18px; text-align:left; font-weight:600; font-size:.76rem; text-transform:uppercase; letter-spacing:.06em; color:var(--text3); background:var(--surface2); border-bottom:2px solid var(--border); }
+  .compare-table td { padding:13px 18px; border-bottom:1px solid var(--border); }
+  .compare-table tr:last-child td { border-bottom:none; }
+  .compare-table .label-col { font-weight:600; color:var(--text); }
+  .compare-table .before { color:var(--red); }
+  .compare-table .after { color:var(--green); font-weight:500; }
+
+  /* ===== STRATEGY ===== */
+  .strategy { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:32px; margin-top:24px; box-shadow:var(--shadow); }
+  .strat-top { text-align:center; padding:16px 24px; background:var(--red-light); border:1px solid rgba(220,38,38,.15); border-radius:10px; margin-bottom:24px; }
+  .strat-top h4 { font-size:1rem; font-weight:700; color:var(--red); }
+  .strat-top p { font-size:.82rem; color:var(--text2); }
+  .strat-branches { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:24px; }
+  @media(max-width:600px) { .strat-branches { grid-template-columns:1fr; } }
+  .strat-branch { padding:16px 20px; border-radius:10px; text-align:center; }
+  .strat-branch.server { background:var(--accent-light); border:1px solid rgba(37,99,235,.15); }
+  .strat-branch.client { background:var(--accent2-light); border:1px solid rgba(124,58,237,.15); }
+  .strat-branch h4 { font-size:.9rem; font-weight:700; margin-bottom:6px; }
+  .strat-branch.server h4 { color:var(--accent); }
+  .strat-branch.client h4 { color:var(--accent2); }
+  .strat-branch p { font-size:.82rem; color:var(--text2); }
+  .strat-center { text-align:center; padding:20px; background:var(--green-light); border:1px solid rgba(5,150,105,.15); border-radius:10px; }
+  .strat-center h4 { font-size:1rem; font-weight:700; color:var(--green); margin-bottom:4px; }
+  .strat-center p { font-size:.85rem; color:var(--text2); }
+  .strat-arrow-down { text-align:center; padding:8px 0; color:var(--text3); font-size:1.2rem; }
+
+  /* ===== TECH STACK ===== */
+  .stack-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:16px; }
+  .stack-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:22px; box-shadow:var(--shadow); }
+  .stack-card h4 { font-size:.75rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--accent); margin-bottom:12px; }
+  .stack-card ul { list-style:none; }
+  .stack-card li { font-size:.85rem; padding:4px 0; color:var(--text2); }
+  .stack-card li::before { content:''; display:inline-block; width:6px; height:6px; background:var(--accent); border-radius:50%; margin-right:8px; vertical-align:middle; }
+
+  /* ===== TIMELINE ===== */
+  .timeline { position:relative; padding-left:28px; }
+  .timeline::before { content:''; position:absolute; left:8px; top:0; bottom:0; width:2px; background:var(--border); }
+  .tl-item { position:relative; margin-bottom:24px; }
+  .tl-item::before { content:''; position:absolute; left:-24px; top:6px; width:12px; height:12px; border-radius:50%; border:2px solid var(--accent); background:var(--surface); }
+  .tl-item.done::before { background:var(--green); border-color:var(--green); }
+  .tl-item.fail::before { background:var(--red); border-color:var(--red); }
+  .tl-item h4 { font-size:.9rem; font-weight:600; }
+  .tl-item p { font-size:.82rem; color:var(--text2); }
+  .tl-item .tl-tag { font-size:.7rem; font-weight:700; padding:2px 8px; border-radius:4px; margin-left:6px; vertical-align:middle; }
+  .tl-item .tl-tag.ok { background:var(--green-light); color:var(--green); }
+  .tl-item .tl-tag.err { background:var(--red-light); color:var(--red); }
+
+  /* Footer */
+  footer { padding:40px 0; text-align:center; border-top:1px solid var(--border); margin-top:40px; }
+  footer p { font-size:.82rem; color:var(--text3); }
+</style>
+</head>
+<body>
+<div style="position:fixed;top:0;left:0;right:0;z-index:9999;background:rgba(248,250,252,0.95);backdrop-filter:blur(10px);padding:12px 24px;border-bottom:1px solid #e2e8f0;">
+  <a href="../index.html" style="color:#2563eb;text-decoration:none;font-size:0.9rem;font-weight:600;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">← Portfolio</a>
+</div>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="container">
+    <h1>Enterprise <span>OCR System</span></h1>
+    <p>MCP 프로토콜의 바이너리 전송 불가 제약을 단계적으로 해결하여, base64 변환 없이 이미지를 직접 전송하는 OCR 파이프라인을 구축한 과정</p>
+    <div class="badge-row">
+      <span class="badge blue">PaddleOCR-VL-1.5</span>
+      <span class="badge purple">vLLM 0.13</span>
+      <span class="badge green">DGX Spark</span>
+      <span class="badge">MCP Protocol</span>
+      <span class="badge">Kubernetes</span>
+      <span class="badge">OAuth 2.1</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SYSTEM OVERVIEW DIAGRAM ============ -->
+<div class="overview-section">
+  <div class="container">
+    <div class="section-label">System Overview</div>
+    <div class="section-title">전체 시스템 구조</div>
+    <div class="overview-diagram">
+
+      <!-- Clients -->
+      <div class="clients-row">
+        <div class="client-chip"><span class="c-icon">&#9881;</span> Claude Code <small style="font-weight:400;color:var(--text3);margin-left:4px">curl multipart</small></div>
+        <div class="client-chip"><span class="c-icon">&#9731;</span> Claude Desktop <small style="font-weight:400;color:var(--text3);margin-left:4px">Skill + HTTPS</small></div>
+        <div class="client-chip"><span class="c-icon">&#9670;</span> Gemini <small style="font-weight:400;color:var(--text3);margin-left:4px">MCP SSE</small></div>
+        <div class="client-chip"><span class="c-icon">&#9635;</span> OpenWebUI <small style="font-weight:400;color:var(--text3);margin-left:4px">Pipe</small></div>
+        <div class="client-chip"><span class="c-icon">&gt;_</span> curl / API <small style="font-weight:400;color:var(--text3);margin-left:4px">REST</small></div>
+      </div>
+
+      <!-- Arrow down -->
+      <div class="big-arrow">
+        <div class="arrow-line"></div>
+        <span class="arrow-head">&#9660;</span>
+        <span class="arrow-label">multipart / MCP / REST</span>
+      </div>
+
+      <!-- Two servers side by side -->
+      <div class="server-layout">
+
+        <!-- Sol K8s -->
+        <div class="server-box sol-box">
+          <div class="server-box-header">
+            <span class="indicator"></span>
+            Sol K8s &mdash; RAG MCP Proxy
+            <span class="tag">v4.3</span>
+          </div>
+          <div class="server-box-body">
+            <div class="svc-item">
+              <div class="svc-icon" style="background:var(--accent-light);color:var(--accent);">&#8644;</div>
+              <div>
+                <div class="svc-name">POST /upload</div>
+                <div class="svc-desc">HTTPS multipart 프록시 (multer)</div>
+              </div>
+              <div class="svc-port">:443</div>
+            </div>
+            <div class="svc-item">
+              <div class="svc-icon" style="background:var(--accent-light);color:var(--accent);">SSE</div>
+              <div>
+                <div class="svc-name">GET /sse</div>
+                <div class="svc-desc">MCP SSE Transport</div>
+              </div>
+              <div class="svc-port">:443</div>
+            </div>
+            <div class="svc-item">
+              <div class="svc-icon" style="background:var(--accent2-light);color:var(--accent2);">&#9741;</div>
+              <div>
+                <div class="svc-name">POST /mcp</div>
+                <div class="svc-desc">Streamable HTTP + OAuth 2.1</div>
+              </div>
+              <div class="svc-port">:443</div>
+            </div>
+            <div style="margin-top:10px;padding:8px 12px;background:var(--surface2);border-radius:8px;font-size:.75rem;color:var(--text3);text-align:center;">
+              rag-mcp.xtdev.co.kr &middot; Keycloak OAuth 2.1 &middot; Express.js
+            </div>
+          </div>
+        </div>
+
+        <!-- Connector -->
+        <div class="server-connector">
+          <div class="conn-line"></div>
+          <div class="conn-label">multipart<br>relay</div>
+        </div>
+
+        <!-- DGX3 -->
+        <div class="server-box dgx-box">
+          <div class="server-box-header">
+            <span class="indicator"></span>
+            DGX3 GPU Server
+            <span class="tag">GB10</span>
+          </div>
+          <div class="server-box-body">
+            <div class="svc-item">
+              <div class="svc-icon" style="background:#dbeafe;color:var(--accent);">M</div>
+              <div>
+                <div class="svc-name">MCP Server</div>
+                <div class="svc-desc">FastMCP &middot; SSE + upload</div>
+              </div>
+              <div class="svc-port">:38765</div>
+            </div>
+            <div class="svc-item">
+              <div class="svc-icon" style="background:var(--orange-light);color:var(--orange);">P</div>
+              <div>
+                <div class="svc-name">Preprocessing Proxy</div>
+                <div class="svc-desc">FastAPI &middot; 전처리 + Quality Gate</div>
+              </div>
+              <div class="svc-port">:38080</div>
+            </div>
+            <div class="svc-item">
+              <div class="svc-icon" style="background:var(--green-light);color:var(--green);">V</div>
+              <div>
+                <div class="svc-name">vLLM</div>
+                <div class="svc-desc">PaddleOCR-VL-1.5 (0.9B) &middot; bfloat16</div>
+              </div>
+              <div class="svc-port">:8000</div>
+            </div>
+            <div class="shared-badge">
+              /shared &middot; tmpfs 512MB (RAM)
+              <small>3개 컨테이너 공유 &rarr; 네트워크 이미지 전송 = 0회</small>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /server-layout -->
+
+      <!-- Bottom flow summary -->
+      <div class="flow-summary">
+        <div class="flow-tag good">&#10003; base64 변환 0회</div>
+        <div class="flow-tag good">&#10003; 컨테이너 간 전송 0회 (tmpfs)</div>
+        <div class="flow-tag info">&#9432; 5종 클라이언트 지원</div>
+        <div class="flow-tag warn">&#9888; MCP JSON-RPC: 텍스트 전용 (우회 적용)</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Metrics -->
+<section>
+  <div class="container">
+    <div class="section-label">Results</div>
+    <div class="section-title">성과 요약</div>
+    <div class="metrics">
+      <div class="metric">
+        <div class="value green">0%</div>
+        <div class="desc">base64 오버헤드 제거<br><small style="color:var(--red)">기존 +33%</small></div>
+      </div>
+      <div class="metric">
+        <div class="value blue">0회</div>
+        <div class="desc">컨테이너 간 이미지 전송<br><small>tmpfs 공유 볼륨</small></div>
+      </div>
+      <div class="metric">
+        <div class="value purple">5종</div>
+        <div class="desc">지원 클라이언트<br><small>Claude, Gemini, OpenWebUI, curl</small></div>
+      </div>
+      <div class="metric">
+        <div class="value cyan">자동</div>
+        <div class="desc">할루시네이션 감지 + 재시도<br><small>Quality Gate 3단계</small></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- Problem Solving Journey -->
+<section>
+  <div class="container">
+    <div class="section-label">Problem Solving</div>
+    <div class="section-title">핵심 문제 해결 과정</div>
+
+    <div class="problem-grid">
+      <!-- Problem 1 -->
+      <div class="problem-card">
+        <div class="problem-header">
+          <div class="problem-num">1</div>
+          <h3>base64 인코딩 — 33% 토큰 낭비</h3>
+        </div>
+        <div class="problem-body">
+          <div class="tag issue">Problem</div>
+          <p>MCP 프로토콜은 JSON-RPC 기반으로 <strong>텍스트만 전송</strong> 가능. 이미지를 보내려면 base64 인코딩이 필수.</p>
+          <p>1MB 이미지 &rarr; 1.33MB 문자열 (+33%). 5MB 이상은 타임아웃/메모리 오류. 인코딩&rarr;전송&rarr;디코딩&rarr;재전송으로 <strong>이중 변환</strong> 발생.</p>
+          <div class="divider"></div>
+          <div class="tag fix">Solution</div>
+          <p><strong>공유 tmpfs 볼륨 <code>/shared</code></strong> 도입. 3개 컨테이너(MCP, Proxy, vLLM)가 RAM 디스크를 공유.</p>
+          <p>MCP가 이미지를 <code>/shared</code>에 저장 &rarr; Proxy가 같은 파일을 전처리 &rarr; vLLM이 <code>file://</code> URL로 직접 읽기.</p>
+          <div class="result">네트워크 상 이미지 바이너리 전송 = 0회, base64 변환 = 0회</div>
+        </div>
+      </div>
+
+      <!-- Problem 2 -->
+      <div class="problem-card">
+        <div class="problem-header">
+          <div class="problem-num">2</div>
+          <h3>Claude Desktop — multipart 전송 불가</h3>
+        </div>
+        <div class="problem-body">
+          <div class="tag issue">Problem</div>
+          <p>Claude Desktop은 MCP 경유만 가능 &rarr; JSON 텍스트 전용 &rarr; base64 필수 (문제 1로 회귀).</p>
+          <div class="divider"></div>
+          <div class="tag try">Trial & Error</div>
+          <p><strong>시도:</strong> Custom Skill로 Code Execution VM에서 <code>curl http://...</code> 직접 전송</p>
+          <p><strong>실패:</strong> VM은 <strong>HTTPS만 허용</strong>, HTTP 차단됨</p>
+          <div class="divider"></div>
+          <div class="tag fix">Solution</div>
+          <p>K8s rag-mcp 서버에 <strong>HTTPS 프록시 엔드포인트</strong> <code>POST /upload</code> 추가 (v4.3). multer로 multipart 수신 &rarr; 기존 함수 재사용하여 DGX3로 중계.</p>
+          <div class="result">Claude Desktop VM &rarr; HTTPS multipart &rarr; rag-mcp &rarr; DGX3. base64 변환 0회.</div>
+        </div>
+      </div>
+
+      <!-- Problem 3 -->
+      <div class="problem-card">
+        <div class="problem-header">
+          <div class="problem-num">3</div>
+          <h3>Skill 패키징 — 4번의 시행착오</h3>
+        </div>
+        <div class="problem-body">
+          <div class="tag try">Iteration</div>
+          <div class="timeline" style="margin-top:12px">
+            <div class="tl-item fail">
+              <h4>YAML frontmatter 누락 <span class="tl-tag err">ERROR</span></h4>
+              <p>SKILL.md에 <code>---</code> 메타데이터 블록 필수 &rarr; 추가</p>
+            </div>
+            <div class="tl-item fail">
+              <h4>name에 공백/대문자 사용 <span class="tl-tag err">ERROR</span></h4>
+              <p>"OCR Multipart Upload" &rarr; <code>ocr-multipart-upload</code> (hyphen-case)</p>
+            </div>
+            <div class="tl-item fail">
+              <h4>scripts/ 경로 못 찾음 <span class="tl-tag err">ERROR</span></h4>
+              <p>VM에서 스킬 파일이 풀리지 않음 &rarr; <strong>인라인 Python 코드</strong>로 변경</p>
+            </div>
+            <div class="tl-item done">
+              <h4>.skill 확장자 + 인라인 코드 + HTTPS <span class="tl-tag ok">RESOLVED</span></h4>
+              <p>공식 package_skill.py로 패키징, HTTPS 엔드포인트로 전송</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Problem 4 -->
+      <div class="problem-card">
+        <div class="problem-header">
+          <div class="problem-num">4</div>
+          <h3>VLM 할루시네이션 — 이상 문자 출력</h3>
+        </div>
+        <div class="problem-body">
+          <div class="tag issue">Problem</div>
+          <p>한국어 문서 OCR 시 중국어/아랍어 아티팩트 간헐 출력. 다국어 학습 데이터에 의한 할루시네이션.</p>
+          <p>예: <code>"합계 금액 &yen;12,500 المجموع"</code></p>
+          <div class="divider"></div>
+          <div class="tag fix">Solution: 3-Stage Quality Gate</div>
+          <div class="flow" style="margin-top:12px">
+            <div class="flow-step">
+              <div class="step-label blue">Stage 1 &middot; Prevention</div>
+              <div class="step-title">프롬프트 방어</div>
+              <div class="step-desc">"Output only recognized text without location coordinates or special tokens"</div>
+            </div>
+            <div class="flow-arrow"></div>
+            <div class="flow-step">
+              <div class="step-label blue">Stage 2 &middot; Cleanup</div>
+              <div class="step-title">clean_ocr_output()</div>
+              <div class="step-desc">&lt;|LOC_xxx|&gt; 토큰 제거, 다중 공백/개행 정리</div>
+            </div>
+            <div class="flow-arrow"></div>
+            <div class="flow-step">
+              <div class="step-label blue">Stage 3 &middot; Auto Retry</div>
+              <div class="step-title">detect_anomaly_scripts()</div>
+              <div class="step-desc">문자별 스크립트 분류 &rarr; 이상 비율 &gt;3% 시 language 힌트 포함 2차 OCR</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Problem 5 -->
+      <div class="problem-card">
+        <div class="problem-header">
+          <div class="problem-num">5</div>
+          <h3>소형 이미지 정확도 저하</h3>
+        </div>
+        <div class="problem-body">
+          <div class="tag issue">Problem</div>
+          <p>654&times;445 이미지 &rarr; VLM 비전 인코더 해상도 부족 &rarr; 오인식 다수</p>
+          <div class="divider"></div>
+          <div class="tag fix">Solution: Sidecar Preprocessing Pipeline</div>
+          <div class="pipeline" style="margin-top:12px">
+            <div class="pipe-step">
+              <div class="pipe-icon" style="background:var(--cyan-light); color:var(--cyan);">1</div>
+              <div class="pipe-info">
+                <h4>FormatConverter</h4>
+                <p>WEBP / HEIC / BMP &rarr; RGB 변환</p>
+              </div>
+            </div>
+            <div class="pipe-arrow"></div>
+            <div class="pipe-step">
+              <div class="pipe-icon" style="background:var(--green-light); color:var(--green);">2</div>
+              <div class="pipe-info">
+                <h4>ResolutionNormalizer</h4>
+                <p>장변 &lt;1500px &rarr; 2&times; LANCZOS 업스케일 (654&times;445 &rarr; 1308&times;890)</p>
+              </div>
+            </div>
+            <div class="pipe-arrow"></div>
+            <div class="pipe-step">
+              <div class="pipe-icon" style="background:var(--accent-light); color:var(--accent);">3</div>
+              <div class="pipe-info">
+                <h4>OrientationCorrector</h4>
+                <p>PP-LCNet ONNX (6.78MB) &middot; confidence &ge;0.8 시 자동 회전</p>
+              </div>
+            </div>
+            <div class="pipe-arrow"></div>
+            <div class="pipe-step" style="opacity:.5">
+              <div class="pipe-icon" style="background:var(--surface2); color:var(--text3);">4</div>
+              <div class="pipe-info">
+                <h4>PerspectiveDewarper <span style="font-size:.7rem; color:var(--text3)">(비활성)</span></h4>
+                <p>UVDoc ONNX &middot; 왜곡 보정 &middot; env로 ON 가능</p>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:12px; font-size:.82rem; color:var(--text2)">
+            설계 원칙: 이진화/그레이스케일/노이즈 제거는 <strong>하지 않음</strong> (VLM에겐 역효과). <strong>해상도 관리</strong>가 핵심. 각 단계 실패 시 원본 반환.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- Before / After -->
+<section>
+  <div class="container">
+    <div class="section-label">Comparison</div>
+    <div class="section-title">최적화 전 / 후 비교</div>
+    <div style="overflow-x:auto">
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th style="width:30%">지표</th>
+            <th style="width:35%">Before (base64)</th>
+            <th style="width:35%">After (multipart)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="label-col">인코딩 오버헤드</td>
+            <td class="before">+33% (base64 문자열)</td>
+            <td class="after">0% (바이너리 직접 전송)</td>
+          </tr>
+          <tr>
+            <td class="label-col">이중 변환</td>
+            <td class="before">encode &rarr; 전송 &rarr; decode &rarr; 재전송</td>
+            <td class="after">없음 (multipart &rarr; 파일 저장 &rarr; file:// URL)</td>
+          </tr>
+          <tr>
+            <td class="label-col">1MB 이미지 전송량</td>
+            <td class="before">~2.33MB (네트워크 2홉)</td>
+            <td class="after">~1MB (또는 0, 공유 볼륨)</td>
+          </tr>
+          <tr>
+            <td class="label-col">5MB 이미지 처리</td>
+            <td class="before">타임아웃 / 메모리 오류</td>
+            <td class="after">안정적 처리</td>
+          </tr>
+          <tr>
+            <td class="label-col">LLM 컨텍스트 토큰 점유</td>
+            <td class="before">base64 문자열이 토큰 소모</td>
+            <td class="after">없음 (MCP 밖에서 전송)</td>
+          </tr>
+          <tr>
+            <td class="label-col">컨테이너 간 전달</td>
+            <td class="before">HTTP 네트워크 (각 홉마다)</td>
+            <td class="after">tmpfs RAM 디스크 (0ms)</td>
+          </tr>
+          <tr>
+            <td class="label-col">지원 클라이언트</td>
+            <td class="before">curl 직접 호출만</td>
+            <td class="after">Claude Code/Desktop, Gemini, OpenWebUI, curl</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- Protocol Bypass Strategy -->
+<section>
+  <div class="container">
+    <div class="section-label">Key Insight</div>
+    <div class="section-title">MCP 프로토콜 한계 우회 전략</div>
+    <div class="strategy">
+      <div class="strat-top">
+        <h4>MCP Protocol Limitation</h4>
+        <p>JSON-RPC = 텍스트 전용. 바이너리 전송 불가. (SEP-1306 표준화 진행 중, 미확정)</p>
+      </div>
+      <div class="strat-arrow-down">&darr;</div>
+      <div class="strat-branches">
+        <div class="strat-branch server">
+          <h4>Server-side Bypass</h4>
+          <p><code>POST /upload</code> multipart 엔드포인트를<br>MCP 프로토콜 <strong>밖에서</strong> 제공</p>
+        </div>
+        <div class="strat-branch client">
+          <h4>Client-side Bypass</h4>
+          <p>Custom Skill &rarr; Code Execution VM에서<br>MCP 프로토콜 <strong>밖에서</strong> HTTP 전송</p>
+        </div>
+      </div>
+      <div class="strat-arrow-down">&darr;</div>
+      <div class="strat-center">
+        <h4>Shared Volume &middot; /shared (tmpfs RAM)</h4>
+        <p>양쪽에서 수신한 이미지를 RAM 디스크에 저장 &rarr; <code>file://</code> URL로 경로만 전달 &rarr; vLLM이 직접 읽기</p>
+        <p style="margin-top:8px; color:var(--green); font-weight:700">바이너리 변환 0회 &middot; 네트워크 전송 0회</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- Tech Stack -->
+<section>
+  <div class="container">
+    <div class="section-label">Tech Stack</div>
+    <div class="section-title">기술 스택</div>
+    <div class="stack-grid">
+      <div class="stack-card">
+        <h4>AI / ML</h4>
+        <ul>
+          <li>PaddleOCR-VL-1.5 (0.9B VLM)</li>
+          <li>vLLM 0.13.0 (bfloat16, Flash Attn)</li>
+          <li>PP-LCNet ONNX (방향 분류)</li>
+          <li>UVDoc ONNX (왜곡 보정)</li>
+        </ul>
+      </div>
+      <div class="stack-card">
+        <h4>Infrastructure</h4>
+        <ul>
+          <li>NVIDIA DGX Spark (GB10 Blackwell)</li>
+          <li>Kubernetes + Docker Compose</li>
+          <li>Keycloak OAuth 2.1</li>
+          <li>Nginx Ingress + Let's Encrypt</li>
+        </ul>
+      </div>
+      <div class="stack-card">
+        <h4>Backend</h4>
+        <ul>
+          <li>FastAPI (전처리 프록시)</li>
+          <li>FastMCP (SSE + Streamable HTTP)</li>
+          <li>Express.js + multer (K8s 프록시)</li>
+          <li>ONNX Runtime (ARM64 네이티브)</li>
+        </ul>
+      </div>
+      <div class="stack-card">
+        <h4>Protocol</h4>
+        <ul>
+          <li>MCP (SSE + Streamable HTTP)</li>
+          <li>OAuth 2.1 (PKCE + DCR)</li>
+          <li>OpenAI Chat Completions (호환)</li>
+          <li>multipart/form-data</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>Enterprise OCR System &middot; 2026</p>
+  </div>
+</footer>
+
+</body>
+</html>
