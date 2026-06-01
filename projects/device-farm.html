@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Device Farm 동시 테스트 자동화</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-primary: #0a0f1e;
+    --bg-secondary: #0f1629;
+    --bg-card: #151d30;
+    --border: #1e2d4a;
+    --text-primary: #e8edf5;
+    --text-secondary: #8b9dc3;
+    --accent-blue: #3b82f6;
+    --accent-cyan: #06b6d4;
+    --accent-violet: #8b5cf6;
+    --accent-emerald: #10b981;
+    --accent-amber: #f59e0b;
+    --font-body: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'Space Mono', 'SF Mono', 'Fira Code', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle, rgba(59,130,246,0.06) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page-wrapper {
+    position: relative;
+    z-index: 1;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* Back Link */
+  .back-link-bar {
+    padding: 20px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.88rem;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+  .back-link:hover {
+    color: var(--accent-blue);
+  }
+  .back-link svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* ===== HERO ===== */
+  .hero {
+    padding: 72px 0 56px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -200px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px;
+    height: 800px;
+    background: radial-gradient(circle, rgba(59,130,246,0.08) 0%, rgba(139,92,246,0.04) 40%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero h1 {
+    font-size: 2.8rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin-bottom: 16px;
+    line-height: 1.2;
+  }
+  .hero h1 .gradient-text {
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan), var(--accent-violet));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero-desc {
+    font-size: 1.05rem;
+    color: var(--text-secondary);
+    max-width: 640px;
+    margin: 0 auto 28px;
+    line-height: 1.8;
+  }
+  .badge-row {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .badge {
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-family: var(--font-mono);
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    transition: all 0.2s;
+  }
+  .badge.blue { border-color: rgba(59,130,246,0.3); color: var(--accent-blue); background: rgba(59,130,246,0.08); }
+  .badge.cyan { border-color: rgba(6,182,212,0.3); color: var(--accent-cyan); background: rgba(6,182,212,0.08); }
+  .badge.violet { border-color: rgba(139,92,246,0.3); color: var(--accent-violet); background: rgba(139,92,246,0.08); }
+  .badge.emerald { border-color: rgba(16,185,129,0.3); color: var(--accent-emerald); background: rgba(16,185,129,0.08); }
+  .badge.amber { border-color: rgba(245,158,11,0.3); color: var(--accent-amber); background: rgba(245,158,11,0.08); }
+
+  /* ===== SECTIONS ===== */
+  section {
+    padding: 56px 0;
+  }
+  .section-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 0;
+  }
+  .section-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent-blue);
+    margin-bottom: 6px;
+    font-family: var(--font-mono);
+  }
+  .section-title {
+    font-size: 1.65rem;
+    font-weight: 800;
+    margin-bottom: 32px;
+    letter-spacing: -0.02em;
+  }
+  .section-intro {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    max-width: 760px;
+    margin: -20px 0 32px;
+    line-height: 1.9;
+  }
+
+  /* ===== TECH STACK TABLE ===== */
+  .tech-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--bg-card);
+  }
+  .tech-table thead th {
+    background: var(--bg-secondary);
+    padding: 12px 20px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-secondary);
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--font-mono);
+  }
+  .tech-table tbody td {
+    padding: 14px 20px;
+    font-size: 0.9rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .tech-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+  .tech-table tbody tr:hover {
+    background: rgba(59,130,246,0.03);
+  }
+  .tech-table .cat-cell {
+    font-weight: 700;
+    color: var(--accent-blue);
+    font-size: 0.82rem;
+    white-space: nowrap;
+    width: 160px;
+  }
+  .tech-table .tech-cell {
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 0.84rem;
+  }
+
+  /* ===== FLOW DIAGRAM ===== */
+  .flow-container {
+    overflow-x: auto;
+    padding: 16px 0;
+  }
+  .flow-diagram {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    min-width: 900px;
+    justify-content: center;
+    padding: 24px 0;
+  }
+  .flow-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    max-width: 120px;
+    text-align: center;
+  }
+  .flow-icon-wrap {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    border: 2px solid var(--border);
+    background: var(--bg-card);
+    position: relative;
+    transition: transform 0.2s, border-color 0.3s, box-shadow 0.3s;
+  }
+  .flow-node:hover .flow-icon-wrap {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(59,130,246,0.15);
+  }
+  .flow-icon-wrap.blue { border-color: rgba(59,130,246,0.4); background: rgba(59,130,246,0.08); }
+  .flow-icon-wrap.cyan { border-color: rgba(6,182,212,0.4); background: rgba(6,182,212,0.08); }
+  .flow-icon-wrap.violet { border-color: rgba(139,92,246,0.4); background: rgba(139,92,246,0.08); }
+  .flow-icon-wrap.emerald { border-color: rgba(16,185,129,0.4); background: rgba(16,185,129,0.08); }
+  .flow-icon-wrap.amber { border-color: rgba(245,158,11,0.4); background: rgba(245,158,11,0.08); }
+  .flow-node-label {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .flow-node-sub {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+    margin-top: -4px;
+  }
+  .flow-arrow {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    padding: 0 4px;
+    margin-bottom: 28px;
+  }
+  .flow-arrow-line {
+    width: 32px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--border), var(--accent-blue), var(--border));
+    position: relative;
+  }
+  .flow-arrow-head {
+    width: 0;
+    height: 0;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-left: 8px solid var(--accent-blue);
+    opacity: 0.6;
+  }
+
+  /* ===== DEVICE GRID ===== */
+  .device-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+  }
+  .device-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: 110px;
+    padding: 20px 12px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    transition: border-color 0.3s, transform 0.2s;
+  }
+  .device-chip:hover {
+    transform: translateY(-3px);
+  }
+  .device-chip.ios:hover { border-color: rgba(6,182,212,0.4); }
+  .device-chip.android:hover { border-color: rgba(16,185,129,0.4); }
+  .device-chip .dev-icon { font-size: 1.7rem; }
+  .device-chip .dev-os {
+    font-size: 0.72rem;
+    font-weight: 700;
+    font-family: var(--font-mono);
+  }
+  .device-chip.ios .dev-os { color: var(--accent-cyan); }
+  .device-chip.android .dev-os { color: var(--accent-emerald); }
+  .device-chip .dev-name {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    text-align: center;
+  }
+
+  /* ===== FEATURE CARDS ===== */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  @media (max-width: 768px) {
+    .features-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 480px) {
+    .features-grid { grid-template-columns: 1fr; }
+  }
+  .feature-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px 20px;
+    transition: border-color 0.3s, transform 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .feature-card:hover {
+    border-color: rgba(59,130,246,0.35);
+    transform: translateY(-2px);
+  }
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent-blue), var(--accent-violet));
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .feature-card:hover::before { opacity: 1; }
+  .feature-num {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--accent-blue);
+    margin-bottom: 10px;
+    opacity: 0.7;
+  }
+  .feature-title {
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-bottom: 8px;
+    line-height: 1.4;
+  }
+  .feature-desc {
+    font-size: 0.84rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+
+  /* ===== NOTE BOX ===== */
+  .note-box {
+    margin-top: 28px;
+    padding: 18px 22px;
+    background: rgba(59,130,246,0.05);
+    border: 1px solid rgba(59,130,246,0.15);
+    border-radius: 12px;
+    font-size: 0.86rem;
+    color: var(--text-secondary);
+    line-height: 1.85;
+  }
+  .note-box strong { color: var(--text-primary); }
+  .note-box code {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--accent-cyan);
+    background: rgba(6,182,212,0.1);
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+
+  /* ===== FOOTER ===== */
+  .footer {
+    padding: 40px 0;
+    text-align: center;
+    border-top: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    font-family: var(--font-mono);
+  }
+
+  /* ===== SCROLLBAR ===== */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(59,130,246,0.3); }
+
+  /* ===== SELECTION ===== */
+  ::selection {
+    background: rgba(59,130,246,0.3);
+    color: var(--text-primary);
+  }
+</style>
+</head>
+<body>
+<div class="page-wrapper">
+
+  <!-- Back Link -->
+  <div class="back-link-bar">
+    <div class="container">
+      <a href="../index.html" class="back-link">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        Portfolio
+      </a>
+    </div>
+  </div>
+
+  <!-- ===== HERO ===== -->
+  <section class="hero">
+    <div class="container">
+      <h1><span class="gradient-text">Device Farm 동시 테스트 자동화</span></h1>
+      <p class="hero-desc">
+        실물 단말 8대(iOS + Android)를 한 번의 git push로<br>
+        동시에 E2E 테스트하는 디바이스팜 CI/CD 파이프라인
+      </p>
+      <div class="badge-row">
+        <span class="badge blue">GADS</span>
+        <span class="badge violet">Patrol</span>
+        <span class="badge amber">Jenkins</span>
+        <span class="badge cyan">Flutter</span>
+        <span class="badge emerald">Mac mini</span>
+        <span class="badge blue">GitLab</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ===== OVERVIEW ===== -->
+  <section>
+    <div class="container">
+      <div class="section-label">Overview</div>
+      <div class="section-title">한 번의 push, 8대 동시 검증</div>
+      <p class="section-intro">
+        맥미니에 연결된 실물 단말 8대(iOS 1 + Android 7)를 디바이스팜으로 묶고, 앱 저장소의 테스트 브랜치에
+        커밋을 push하면 빌드부터 8대 동시 E2E 테스트, 결과 리포트까지 사람 손 없이 흘러갑니다.
+        디바이스 화면은 GADS 웹 UI로 실시간 모니터링합니다.
+      </p>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ===== TECH STACK ===== -->
+  <section>
+    <div class="container">
+      <div class="section-label">Tech Stack</div>
+      <div class="section-title">기술 스택</div>
+      <table class="tech-table">
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Technology</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="cat-cell">Device Farm</td>
+            <td class="tech-cell">GADS (Go) &middot; Hub + Provider</td>
+          </tr>
+          <tr>
+            <td class="cat-cell">Test Framework</td>
+            <td class="tech-cell">Patrol (Flutter E2E)</td>
+          </tr>
+          <tr>
+            <td class="cat-cell">CI Controller</td>
+            <td class="tech-cell">Jenkins Pipeline (Groovy)</td>
+          </tr>
+          <tr>
+            <td class="cat-cell">CI Agent</td>
+            <td class="tech-cell">Jenkins Agent on Mac mini (HTTPS pull)</td>
+          </tr>
+          <tr>
+            <td class="cat-cell">Build</td>
+            <td class="tech-cell">Flutter (fvm), Xcode, Gradle</td>
+          </tr>
+          <tr>
+            <td class="cat-cell">Source</td>
+            <td class="tech-cell">GitLab + Webhook</td>
+          </tr>
+          <tr>
+            <td class="cat-cell">Result</td>
+            <td class="tech-cell">JUnit XML</td>
+          </tr>
+          <tr>
+            <td class="cat-cell">Monitoring</td>
+            <td class="tech-cell">GADS Web UI (실시간 화면)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ===== END-TO-END FLOW ===== -->
+  <section>
+    <div class="container">
+      <div class="section-label">Workflow</div>
+      <div class="section-title">End-to-End Flow</div>
+      <div class="flow-container">
+        <div class="flow-diagram">
+
+          <!-- Developer -->
+          <div class="flow-node">
+            <div class="flow-icon-wrap blue">&#128104;&#8205;&#128187;</div>
+            <div class="flow-node-label">Developer</div>
+            <div class="flow-node-sub">git push</div>
+          </div>
+          <div class="flow-arrow"><div class="flow-arrow-line"></div><div class="flow-arrow-head"></div></div>
+
+          <!-- GitLab -->
+          <div class="flow-node">
+            <div class="flow-icon-wrap amber">&#128230;</div>
+            <div class="flow-node-label">GitLab</div>
+            <div class="flow-node-sub">Webhook</div>
+          </div>
+          <div class="flow-arrow"><div class="flow-arrow-line"></div><div class="flow-arrow-head"></div></div>
+
+          <!-- Jenkins -->
+          <div class="flow-node">
+            <div class="flow-icon-wrap blue">&#9881;&#65039;</div>
+            <div class="flow-node-label">Jenkins</div>
+            <div class="flow-node-sub">Controller</div>
+          </div>
+          <div class="flow-arrow"><div class="flow-arrow-line"></div><div class="flow-arrow-head"></div></div>
+
+          <!-- Mac mini Agent -->
+          <div class="flow-node">
+            <div class="flow-icon-wrap emerald">&#128421;&#65039;</div>
+            <div class="flow-node-label">Mac mini</div>
+            <div class="flow-node-sub">Agent pull</div>
+          </div>
+          <div class="flow-arrow"><div class="flow-arrow-line"></div><div class="flow-arrow-head"></div></div>
+
+          <!-- 8 Devices -->
+          <div class="flow-node">
+            <div class="flow-icon-wrap violet">&#128241;</div>
+            <div class="flow-node-label">8 Devices</div>
+            <div class="flow-node-sub">Patrol 병렬</div>
+          </div>
+          <div class="flow-arrow"><div class="flow-arrow-line"></div><div class="flow-arrow-head"></div></div>
+
+          <!-- Report -->
+          <div class="flow-node">
+            <div class="flow-icon-wrap cyan">&#128202;</div>
+            <div class="flow-node-label">Report</div>
+            <div class="flow-node-sub">JUnit XML</div>
+          </div>
+
+        </div>
+      </div>
+      <div class="note-box">
+        <strong>네트워크 우회 — Agent Pull 모델.</strong> Jenkins 컨트롤러(지원서버)와 맥미니는 서로 다른 L2 네트워크에 있어
+        컨트롤러가 맥미니로 직접 접속(SSH push)할 수 없습니다. 그래서 <strong>맥미니가 외부 도메인(HTTPS)으로 컨트롤러에 붙는
+        Agent pull 방식</strong>으로 전환해, 빌드 잡이 맥미니 위에서 실행되도록 했습니다.
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ===== DEVICE COMPOSITION ===== -->
+  <section>
+    <div class="container">
+      <div class="section-label">Devices</div>
+      <div class="section-title">8대 동시 실행 구성</div>
+      <p class="section-intro">
+        8대를 라운드로 쪼개지 않고 <strong style="color:var(--text-primary);">단일 wave parallel block</strong>으로 한 번에 spawn해
+        동시 실행합니다. iOS 1대 + Android 7대가 같은 빌드 사이클에서 함께 테스트됩니다.
+      </p>
+      <div class="device-grid">
+        <div class="device-chip ios">
+          <span class="dev-icon">&#127822;</span>
+          <span class="dev-os">iOS</span>
+          <span class="dev-name">iPhone &times;1</span>
+        </div>
+        <div class="device-chip android"><span class="dev-icon">&#129302;</span><span class="dev-os">Android</span><span class="dev-name">단말 #1</span></div>
+        <div class="device-chip android"><span class="dev-icon">&#129302;</span><span class="dev-os">Android</span><span class="dev-name">단말 #2</span></div>
+        <div class="device-chip android"><span class="dev-icon">&#129302;</span><span class="dev-os">Android</span><span class="dev-name">단말 #3</span></div>
+        <div class="device-chip android"><span class="dev-icon">&#129302;</span><span class="dev-os">Android</span><span class="dev-name">단말 #4</span></div>
+        <div class="device-chip android"><span class="dev-icon">&#129302;</span><span class="dev-os">Android</span><span class="dev-name">단말 #5</span></div>
+        <div class="device-chip android"><span class="dev-icon">&#129302;</span><span class="dev-os">Android</span><span class="dev-name">단말 #6</span></div>
+        <div class="device-chip android"><span class="dev-icon">&#129302;</span><span class="dev-os">Android</span><span class="dev-name">단말 #7</span></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ===== KEY FEATURES ===== -->
+  <section>
+    <div class="container">
+      <div class="section-label">Features</div>
+      <div class="section-title">핵심 포인트</div>
+      <div class="features-grid">
+
+        <div class="feature-card">
+          <div class="feature-num">01</div>
+          <div class="feature-title">Agent Pull 통신 모델</div>
+          <div class="feature-desc">
+            컨트롤러↔맥미니 L2 격리로 SSH push 불가. 맥미니가 외부 도메인(HTTPS)으로 Jenkins에 붙어 빌드 잡을 끌어오는 방식으로 우회.
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-num">02</div>
+          <div class="feature-title">8대 Single-Wave 병렬</div>
+          <div class="feature-desc">
+            라운드 분할 없이 8대(iOS 1 + Android 7)를 단일 parallel block으로 동시 spawn. 전체 테스트가 한 wave에서 끝납니다.
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-num">03</div>
+          <div class="feature-title">WDA 자동 재빌드</div>
+          <div class="feature-desc">
+            무료 Apple 계정의 7일 프로파일 만료에 대응해, LaunchAgent가 WebDriverAgent를 주기적으로 자동 재빌드합니다.
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-num">04</div>
+          <div class="feature-title">JUnit XML 결과 수집</div>
+          <div class="feature-desc">
+            Patrol 테스트 결과를 표준 JUnit XML로 출력해 Jenkins가 자동 파싱. 단말별 pass/fail을 한눈에 집계합니다.
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-num">05</div>
+          <div class="feature-title">GADS 실시간 모니터링</div>
+          <div class="feature-desc">
+            8대 단말 화면을 GADS 웹 UI로 실시간 확인. 별도 미러링 인프라 없이 디바이스팜 기본 기능을 그대로 활용합니다.
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-num">06</div>
+          <div class="feature-title">LaunchAgent 무중단 운영</div>
+          <div class="feature-desc">
+            hub / provider / healthcheck / wda-rebuild / jenkins-agent 5종 LaunchAgent로 맥미니 부팅 시 디바이스팜이 자동 기동됩니다.
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer">
+    <div class="container">
+      Device Farm 동시 테스트 자동화 &middot; 2026
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>

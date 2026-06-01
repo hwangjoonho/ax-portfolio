@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cross-App 핑퐁 테스트</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-primary: #0a0f1e;
+    --bg-secondary: #0f1629;
+    --bg-card: #151d30;
+    --border: #1e2d4a;
+    --text-primary: #e8edf5;
+    --text-secondary: #8b9dc3;
+    --accent-blue: #3b82f6;
+    --accent-cyan: #06b6d4;
+    --accent-violet: #8b5cf6;
+    --accent-emerald: #10b981;
+    --accent-amber: #f59e0b;
+    --font-body: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'Space Mono', 'SF Mono', 'Fira Code', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle, rgba(139,92,246,0.06) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page-wrapper {
+    position: relative;
+    z-index: 1;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* Back Link */
+  .back-link-bar {
+    padding: 20px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.88rem;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+  .back-link:hover {
+    color: var(--accent-violet);
+  }
+  .back-link svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* ===== HERO ===== */
+  .hero {
+    padding: 72px 0 56px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -200px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px;
+    height: 800px;
+    background: radial-gradient(circle, rgba(139,92,246,0.09) 0%, rgba(6,182,212,0.04) 40%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero h1 {
+    font-size: 2.8rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin-bottom: 16px;
+    line-height: 1.2;
+  }
+  .hero h1 .gradient-text {
+    background: linear-gradient(135deg, var(--accent-violet), var(--accent-cyan), var(--accent-emerald));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero-desc {
+    font-size: 1.05rem;
+    color: var(--text-secondary);
+    max-width: 640px;
+    margin: 0 auto 28px;
+    line-height: 1.8;
+  }
+  .badge-row {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .badge {
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-family: var(--font-mono);
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    transition: all 0.2s;
+  }
+  .badge.blue { border-color: rgba(59,130,246,0.3); color: var(--accent-blue); background: rgba(59,130,246,0.08); }
+  .badge.cyan { border-color: rgba(6,182,212,0.3); color: var(--accent-cyan); background: rgba(6,182,212,0.08); }
+  .badge.violet { border-color: rgba(139,92,246,0.3); color: var(--accent-violet); background: rgba(139,92,246,0.08); }
+  .badge.emerald { border-color: rgba(16,185,129,0.3); color: var(--accent-emerald); background: rgba(16,185,129,0.08); }
+  .badge.amber { border-color: rgba(245,158,11,0.3); color: var(--accent-amber); background: rgba(245,158,11,0.08); }
+
+  /* ===== SECTIONS ===== */
+  section {
+    padding: 56px 0;
+  }
+  .section-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 0;
+  }
+  .section-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent-violet);
+    margin-bottom: 6px;
+    font-family: var(--font-mono);
+  }
+  .section-title {
+    font-size: 1.65rem;
+    font-weight: 800;
+    margin-bottom: 32px;
+    letter-spacing: -0.02em;
+  }
+  .section-intro {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    max-width: 760px;
+    margin: -20px 0 32px;
+    line-height: 1.9;
+  }
+
+  /* ===== TECH STACK TABLE ===== */
+  .tech-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--bg-card);
+  }
+  .tech-table thead th {
+    background: var(--bg-secondary);
+    padding: 12px 20px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-secondary);
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--font-mono);
+  }
+  .tech-table tbody td {
+    padding: 14px 20px;
+    font-size: 0.9rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .tech-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+  .tech-table tbody tr:hover {
+    background: rgba(139,92,246,0.03);
+  }
+  .tech-table .cat-cell {
+    font-weight: 700;
+    color: var(--accent-violet);
+    font-size: 0.82rem;
+    white-space: nowrap;
+    width: 160px;
+  }
+  .tech-table .tech-cell {
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 0.84rem;
+  }
+
+  /* ===== PINGPONG DIAGRAM ===== */
+  .pingpong {
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    gap: 0;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 16px 0;
+  }
+  .pp-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-width: 180px;
+    padding: 28px 20px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    flex-shrink: 0;
+  }
+  .pp-node.device { border-color: rgba(16,185,129,0.35); }
+  .pp-node.bridge { border-color: rgba(245,158,11,0.4); }
+  .pp-node.web { border-color: rgba(6,182,212,0.35); }
+  .pp-node .pp-icon { font-size: 2.2rem; }
+  .pp-node .pp-name { font-size: 0.98rem; font-weight: 800; }
+  .pp-node .pp-tool {
+    font-size: 0.72rem;
+    font-family: var(--font-mono);
+    color: var(--text-secondary);
+    padding: 2px 10px;
+    border-radius: 12px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+  }
+  .pp-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    min-width: 160px;
+    padding: 0 8px;
+    flex-shrink: 0;
+  }
+  .pp-signal {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    width: 100%;
+  }
+  .pp-signal .sig-label {
+    font-size: 0.68rem;
+    font-family: var(--font-mono);
+    font-weight: 700;
+  }
+  .pp-signal.fwd .sig-label { color: var(--accent-emerald); }
+  .pp-signal.bwd .sig-label { color: var(--accent-cyan); }
+  .pp-signal .sig-arrow {
+    width: 100%;
+    height: 2px;
+    position: relative;
+    border-radius: 2px;
+  }
+  .pp-signal.fwd .sig-arrow {
+    background: linear-gradient(90deg, transparent, var(--accent-emerald));
+  }
+  .pp-signal.fwd .sig-arrow::after {
+    content: '';
+    position: absolute;
+    right: 0; top: 50%;
+    transform: translateY(-50%);
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-left: 8px solid var(--accent-emerald);
+  }
+  .pp-signal.bwd .sig-arrow {
+    background: linear-gradient(90deg, var(--accent-cyan), transparent);
+  }
+  .pp-signal.bwd .sig-arrow::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 50%;
+    transform: translateY(-50%);
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-right: 8px solid var(--accent-cyan);
+  }
+  @media (max-width: 720px) {
+    .pingpong { flex-direction: column; align-items: center; }
+    .pp-link { min-width: 0; width: 100%; padding: 12px 0; }
+    .pp-signal .sig-arrow { width: 60%; }
+  }
+
+  /* ===== STEP TIMELINE ===== */
+  .pp-steps {
+    list-style: none;
+    position: relative;
+    padding-left: 28px;
+    max-width: 820px;
+  }
+  .pp-steps::before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    top: 4px;
+    bottom: 4px;
+    width: 2px;
+    background: var(--border);
+  }
+  .pp-steps li {
+    position: relative;
+    padding: 10px 0;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+  }
+  .pp-steps li::before {
+    content: '';
+    position: absolute;
+    left: -22px;
+    top: 17px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    border: 2px solid var(--accent-violet);
+  }
+  .pp-steps li .step-num {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--accent-violet);
+    font-weight: 700;
+    margin-right: 8px;
+  }
+  .pp-steps li .step-name { font-weight: 700; }
+  .pp-steps li .step-desc { color: var(--text-secondary); font-size: 0.86rem; }
+  .pp-steps li .sig-pill {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    padding: 1px 8px;
+    border-radius: 10px;
+    margin-left: 4px;
+    white-space: nowrap;
+  }
+  .sig-pill.fwd { color: var(--accent-emerald); background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.25); }
+  .sig-pill.bwd { color: var(--accent-cyan); background: rgba(6,182,212,0.1); border: 1px solid rgba(6,182,212,0.25); }
+
+  /* ===== FEATURE CARDS ===== */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  @media (max-width: 768px) {
+    .features-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 480px) {
+    .features-grid { grid-template-columns: 1fr; }
+  }
+  .feature-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px 20px;
+    transition: border-color 0.3s, transform 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .feature-card:hover {
+    border-color: rgba(139,92,246,0.35);
+    transform: translateY(-2px);
+  }
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent-violet), var(--accent-cyan));
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .feature-card:hover::before { opacity: 1; }
+  .feature-num {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--accent-violet);
+    margin-bottom: 10px;
+    opacity: 0.7;
+  }
+  .feature-title {
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-bottom: 8px;
+    line-height: 1.4;
+  }
+  .feature-desc {
+    font-size: 0.84rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+
+  /* ===== NOTE BOX ===== */
+  .note-box {
+    margin-top: 28px;
+    padding: 18px 22px;
+    background: rgba(139,92,246,0.05);
+    border: 1px solid rgba(139,92,246,0.15);
+    border-radius: 12px;
+    font-size: 0.86rem;
+    color: var(--text-secondary);
+    line-height: 1.85;
+  }
+  .note-box strong { color: var(--text-primary); }
+  .note-box code {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--accent-cyan);
+    background: rgba(6,182,212,0.1);
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+
+  /* ===== FOOTER ===== */
+  .footer {
+    padding: 40px 0;
+    text-align: center;
+    border-top: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    font-family: var(--font-mono);
+  }
+
+  /* ===== SCROLLBAR ===== */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(139,92,246,0.3); }
+
+  /* ===== SELECTION ===== */
+  ::selection {
+    background: rgba(139,92,246,0.3);
+    color: var(--text-primary);
+  }
+</style>
+</head>
+<body>
+<div class="page-wrapper">
+
+  <!-- Back Link -->
+  <div class="back-link-bar">
+    <div class="container">
+      <a href="../index.html" class="back-link">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        Portfolio
+      </a>
+    </div>
+  </div>
+
+  <!-- ===== HERO ===== -->
+  <section class="hero">
+    <div class="container">
+      <h1><span class="gradient-text">Cross-App 핑퐁 테스트</span></h1>
+      <p class="hero-desc">
+        모바일 앱과 관리자 웹이 신호를 주고받으며<br>
+        하나의 시나리오를 함께 완성하는 양방향 Cross-App E2E 테스트
+      </p>
+      <div class="badge-row">
+        <span class="badge emerald">Patrol</span>
+        <span class="badge cyan">Playwright</span>
+        <span class="badge amber">Node Bridge</span>
+        <span class="badge violet">Trace Viewer</span>
+        <span class="badge blue">Jenkins</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ===== OVERVIEW ===== -->
+  <section>
+    <div class="container">
+      <div class="section-label">Overview</div>
+      <div class="section-title">앱과 웹을 넘나드는 시나리오</div>
+      <p class="section-intro">
+        실제 운영에서 회원가입은 <strong style="color:var(--text-primary);">앱에서 가입 &rarr; 관리자 웹에서 승인 &rarr; 앱에서 후속 진행</strong>으로
+        앱과 웹을 오갑니다. 이 흐름을 특정 단말 1대에서 자동 검증합니다. 모바일은 Patrol, 관리자 웹은 Playwright가 맡고,
+        가운데 경량 브리지 서버가 양쪽 신호를 중계해 <strong style="color:var(--text-primary);">'핑퐁'</strong>처럼 단계를 주고받습니다.
+      </p>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ===== TECH STACK ===== -->
+  <section>
+    <div class="container">
+      <div class="section-label">Tech Stack</div>
+      <div class="section-title">기술 스택</div>
+      <table class="tech-table">
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Technology</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="cat-cell">Mobile App</td>
+            <td class="tech-cell">Flutter App + Patrol (E2E)</td>
+          </tr>
+          <tr>
+            <td class="cat-cell">Web Admin</td>
+            <td class="tech-cell">Admin Web + Playwright</td>
+          </tr>
+          <tr>
+            <td class="cat-cell">Bridge</td>
+            <td class="tech-cell">Node.js Express (localhost:8090)</td>
+          </tr>
+          <tr>
+            <td class="cat-cell">Sync</td>
+            <td class="tech-cell">workspace-scoped JSON + flock</td>
+          </tr>
+          <tr>
+            <td class="cat-cell">Visualization</td>
+            <td class="tech-cell">Playwright Trace Viewer (trace.zip)</td>
+          </tr>
+          <tr>
+            <td class="cat-cell">CI</td>
+            <td class="tech-cell">Jenkins Pipeline</td>
+          </tr>
+          <tr>
+            <td class="cat-cell">Device</td>
+            <td class="tech-cell">단일 단말 전용 (fresh install)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ===== PINGPONG MECHANISM ===== -->
+  <section>
+    <div class="container">
+      <div class="section-label">Mechanism</div>
+      <div class="section-title">핑퐁 메커니즘</div>
+      <div class="pingpong">
+
+        <!-- Device -->
+        <div class="pp-node device">
+          <span class="pp-icon">&#128241;</span>
+          <span class="pp-name">Device App</span>
+          <span class="pp-tool">Patrol</span>
+        </div>
+
+        <!-- Device <-> Bridge -->
+        <div class="pp-link">
+          <div class="pp-signal fwd">
+            <span class="sig-label">signup_complete &rarr;</span>
+            <span class="sig-arrow"></span>
+          </div>
+          <div class="pp-signal bwd">
+            <span class="sig-label">&larr; admin_verified</span>
+            <span class="sig-arrow"></span>
+          </div>
+        </div>
+
+        <!-- Bridge -->
+        <div class="pp-node bridge">
+          <span class="pp-icon">&#128257;</span>
+          <span class="pp-name">Bridge Server</span>
+          <span class="pp-tool">Node :8090</span>
+        </div>
+
+        <!-- Bridge <-> Web -->
+        <div class="pp-link">
+          <div class="pp-signal fwd">
+            <span class="sig-label">notify &rarr;</span>
+            <span class="sig-arrow"></span>
+          </div>
+          <div class="pp-signal bwd">
+            <span class="sig-label">&larr; verified</span>
+            <span class="sig-arrow"></span>
+          </div>
+        </div>
+
+        <!-- Web -->
+        <div class="pp-node web">
+          <span class="pp-icon">&#128421;&#65039;</span>
+          <span class="pp-name">Admin Web</span>
+          <span class="pp-tool">Playwright</span>
+        </div>
+
+      </div>
+      <div class="note-box">
+        <strong>왜 브리지 서버인가.</strong> 디바이스 측 Patrol과 웹 측 Playwright는 서로 직접 통신할 수 없습니다.
+        그래서 가운데 <code>localhost:8090</code> 경량 HTTP 서버를 두고, 한쪽이 단계를 끝내면 신호를 올리고
+        다른 쪽이 그 신호를 <strong>consume</strong>한 뒤 자기 단계를 진행합니다. 신호가 양방향으로 오가며 하나의 시나리오가 완성됩니다.
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ===== SIGNUP SCENARIO ===== -->
+  <section>
+    <div class="container">
+      <div class="section-label">Scenario</div>
+      <div class="section-title">회원가입 핑퐁 흐름</div>
+      <ol class="pp-steps">
+        <li>
+          <span class="step-num">01</span>
+          <span class="step-name">앱 &mdash; 회원가입</span>
+          <span class="step-desc"> &mdash; Patrol이 모바일 앱에서 신규 회원가입 폼을 작성/제출</span>
+        </li>
+        <li>
+          <span class="step-num">02</span>
+          <span class="step-name">앱 &rarr; 브리지</span>
+          <span class="step-desc"> &mdash; 가입 완료 신호를 브리지 서버로 전송</span>
+          <span class="sig-pill fwd">signup_complete</span>
+        </li>
+        <li>
+          <span class="step-num">03</span>
+          <span class="step-name">웹 &mdash; 승인 처리</span>
+          <span class="step-desc"> &mdash; Playwright가 관리자 웹에서 해당 회원을 조회하고 승인</span>
+        </li>
+        <li>
+          <span class="step-num">04</span>
+          <span class="step-name">웹 &rarr; 브리지</span>
+          <span class="step-desc"> &mdash; 승인 완료 신호를 브리지 서버로 전송</span>
+          <span class="sig-pill bwd">admin_verified</span>
+        </li>
+        <li>
+          <span class="step-num">05</span>
+          <span class="step-name">앱 &mdash; 후속 진행</span>
+          <span class="step-desc"> &mdash; 승인 신호를 consume하고 로그인 등 후속 시나리오를 이어서 검증</span>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ===== KEY FEATURES ===== -->
+  <section>
+    <div class="container">
+      <div class="section-label">Features</div>
+      <div class="section-title">핵심 포인트</div>
+      <div class="features-grid">
+
+        <div class="feature-card">
+          <div class="feature-num">01</div>
+          <div class="feature-title">양방향 신호 교환</div>
+          <div class="feature-desc">
+            signup_complete(앱&rarr;웹)와 admin_verified(웹&rarr;앱)를 양쪽이 번갈아 consume하며 시나리오를 함께 완성합니다.
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-num">02</div>
+          <div class="feature-title">경량 브리지 서버</div>
+          <div class="feature-desc">
+            Node.js Express로 만든 작은 HTTP 서버(localhost:8090). Patrol이 권장하는 localhost HTTP 패턴에 맞춰 신호를 중계합니다.
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-num">03</div>
+          <div class="feature-title">Workspace 단위 격리</div>
+          <div class="feature-desc">
+            빌드 워크스페이스 범위의 신호 파일 + flock 락으로, 동시/연속 빌드 간 신호가 섞이지 않도록 격리합니다.
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-num">04</div>
+          <div class="feature-title">Trace Viewer 시각화</div>
+          <div class="feature-desc">
+            Playwright trace.zip을 아티팩트로 저장해, 사후에 웹 단계를 한 스텝씩 재생하며 진행 화면을 확인할 수 있습니다.
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-num">05</div>
+          <div class="feature-title">단일 단말 멱등 실행</div>
+          <div class="feature-desc">
+            전용 단말에서 관련 패키지를 명시적으로 uninstall 후 fresh install. 매 빌드가 같은 초기 상태에서 시작합니다.
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-num">06</div>
+          <div class="feature-title">실제 운영 플로우 검증</div>
+          <div class="feature-desc">
+            단위 화면이 아니라 앱&harr;웹을 넘나드는 가입 승인 같은 실제 cross-app 업무 플로우를 자동으로 검증합니다.
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer">
+    <div class="container">
+      Cross-App 핑퐁 테스트 &middot; 2026
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>
