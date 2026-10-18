@@ -483,6 +483,14 @@
       text-underline-offset: 3px;
     }
 
+    .timeline-year {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--accent-cyan);
+      margin-left: 6px;
+      opacity: 0.85;
+    }
+
     .timeline-tag {
       font-size: 0.75rem;
       padding: 2px 8px;
@@ -973,27 +981,27 @@
           </div>
           <div class="timeline-group">AI 플랫폼 &middot; 모델 서빙</div>
           <ul class="timeline-list">
-            <li>사내 AI 플랫폼 초기 아키텍처 설계 &mdash; vLLM &middot; SGLang &middot; TensorRT &middot; Ollama 기반 LLM 셀프호스팅 환경 구축</li>
-            <li>오픈 LLM(Qwen, HyperCLOVA X, EXAONE 등) 서빙 및 사내 서비스 연동</li>
-            <li>HuggingFace 이미지 생성 모델(Z-Image, FLUX 등) + ComfyUI 구축 및 연동</li>
+            <li>사내 AI 플랫폼 초기 아키텍처 설계 &mdash; vLLM &middot; SGLang &middot; TensorRT &middot; Ollama 기반 LLM 셀프호스팅 환경 구축 <span class="timeline-year">2025</span></li>
+            <li>오픈 LLM(Qwen, HyperCLOVA X, EXAONE 등) 서빙 및 사내 서비스 연동 <span class="timeline-year">2026</span></li>
+            <li>HuggingFace 이미지 생성 모델(Z-Image, FLUX 등) + ComfyUI 구축 및 연동 <span class="timeline-year">2026</span></li>
             <li>MCP 기반 AI 도구 연동 &mdash; Claude Code &middot; Gemini CLI에서 사내 RAG &middot; OCR &middot; LLM 직접 호출</li>
           </ul>
           <div class="timeline-group">RAG &middot; GraphRAG &middot; OCR</div>
           <ul class="timeline-list">
-            <li>사내 문서 RAG 파이프라인 전체 설계 및 구축 (Weaviate Hybrid Search, 5-Phase 청킹, 3-Tier 권한)</li>
-            <li>GraphRAG 구축 및 연동 (Neo4j, TypeDB)</li>
-            <li>Enterprise OCR 시스템 구축 &mdash; PaddleOCR-VL &middot; Granite, MCP 바이너리 전송 한계 우회</li>
+            <li>사내 문서 RAG 파이프라인 전체 설계 및 구축 (Weaviate Hybrid Search, 5-Phase 청킹, 3-Tier 권한) <span class="timeline-year">2025</span></li>
+            <li>GraphRAG 구축 및 연동 (Neo4j, TypeDB) <span class="timeline-year">2026</span></li>
+            <li>Enterprise OCR 시스템 구축 &mdash; PaddleOCR-VL &middot; Granite, MCP 바이너리 전송 한계 우회 <span class="timeline-year">2026</span></li>
           </ul>
           <div class="timeline-group">백엔드 서비스 개발</div>
           <ul class="timeline-list">
-            <li>(현) 성원애드피아 백엔드 개발 &mdash; AI 활용 개발 프로세스 적용</li>
-            <li><a href="https://moaboard.m-teacher.co.kr/" target="_blank" rel="noopener">미래엔 모아보드 &#8599;</a> <span class="timeline-tag">소켓 인터랙티브 화이트보드</span> 애플리케이션 백엔드 개발 <strong>PL</strong> &mdash; AI 활용 개발로 성공적 수행</li>
-            <li>초록우산 애플리케이션 백엔드 개발</li>
+            <li>성원애드피아 백엔드 개발 &mdash; AI 활용 개발 프로세스 적용 <span class="timeline-year">현재</span></li>
+            <li><a href="https://moaboard.m-teacher.co.kr/" target="_blank" rel="noopener">미래엔 모아보드 &#8599;</a> <span class="timeline-tag">소켓 인터랙티브 화이트보드</span> 애플리케이션 백엔드 개발 <strong>PL</strong> &mdash; AI 활용 개발로 성공적 수행 <span class="timeline-year">2026</span></li>
+            <li>초록우산 애플리케이션 백엔드 개발 <span class="timeline-year">2025</span></li>
           </ul>
           <div class="timeline-group">DevOps &middot; 인프라</div>
           <ul class="timeline-list">
             <li>사내 쿠버네티스(K3s) 플랫폼 구축 &middot; 운영 &mdash; Jenkins &middot; ArgoCD &middot; Prometheus &middot; Grafana 자동화 워크플로우</li>
-            <li>GitOps CI/CD 설계 (Jenkins + ArgoCD + Kustomize) &mdash; git push 한 번으로 빌드부터 배포까지 자동화</li>
+            <li>GitOps CI/CD 설계 (Jenkins + ArgoCD + Kustomize) &mdash; git push 한 번으로 빌드부터 배포까지 자동화 <span class="timeline-year">2025</span></li>
             <li>서버 인프라 &middot; 배포 체계 구축 &mdash; Proxy(Nginx) / Frontend(Apache, Nginx) / Backend(Tomcat)</li>
             <li>실물 단말 Device Farm &middot; Cross-App E2E 테스트 자동화 총괄</li>
             <li>Hoppscotch(API 테스트 플랫폼) 셀프호스팅 및 운영</li>
