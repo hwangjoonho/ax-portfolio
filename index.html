@@ -7,1461 +7,575 @@
   <meta name="description" content="5년차 백엔드 · AI 플랫폼 엔지니어 포트폴리오 — LLM 셀프호스팅, RAG/GraphRAG, OCR, Kubernetes · GitOps">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/site.css">
   <style>
-    /* ===== CSS Custom Properties ===== */
-    :root {
-      --bg-primary: #0a0f1e;
-      --bg-secondary: #0f1629;
-      --bg-card: #151d30;
-      --border: #1e2d4a;
-      --text-primary: #e8edf5;
-      --text-secondary: #8b9dc3;
-      --accent-blue: #3b82f6;
-      --accent-cyan: #06b6d4;
-      --accent-violet: #8b5cf6;
-      --accent-emerald: #10b981;
-      --accent-amber: #f59e0b;
-      --text-muted: #64748b;
-      --radius-lg: 16px;
-      --font-body: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-      --font-mono: 'Space Mono', monospace;
-      --nav-height: 64px;
-    }
-
-    /* ===== Reset & Base ===== */
-    *, *::before, *::after {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    html {
-      scroll-behavior: smooth;
-      scroll-padding-top: var(--nav-height);
-    }
-
-    body {
-      font-family: var(--font-body);
-      background-color: var(--bg-primary);
-      color: var(--text-primary);
-      line-height: 1.7;
-      overflow-x: hidden;
-      background-image: radial-gradient(circle, rgba(59,130,246,0.06) 1px, transparent 1px);
-      background-size: 32px 32px;
-    }
-
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    /* ===== Scroll Reveal Animation ===== */
-    .reveal {
-      opacity: 0;
-      transform: translateY(40px);
-      transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
-    }
-
-    .reveal.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .reveal-delay-1 { transition-delay: 0.1s; }
-    .reveal-delay-2 { transition-delay: 0.2s; }
-    .reveal-delay-3 { transition-delay: 0.3s; }
-    .reveal-delay-4 { transition-delay: 0.4s; }
-
-    /* ===== Navigation ===== */
-    .nav {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: var(--nav-height);
-      background: rgba(10, 15, 30, 0.85);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-bottom: 1px solid var(--border);
-      z-index: 1000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .nav-inner {
-      width: 100%;
-      max-width: 1200px;
-      padding: 0 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .nav-logo {
-      font-family: var(--font-mono);
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: var(--accent-blue);
-      letter-spacing: -0.5px;
-    }
-
-    .nav-logo span {
-      color: var(--accent-cyan);
-    }
-
-    .nav-links {
-      display: flex;
-      gap: 32px;
-      list-style: none;
-    }
-
-    .nav-links a {
-      font-size: 0.875rem;
-      font-weight: 500;
-      color: var(--text-secondary);
-      transition: color 0.3s ease;
-      position: relative;
-    }
-
-    .nav-links a::after {
-      content: '';
-      position: absolute;
-      bottom: -4px;
-      left: 0;
-      width: 0;
-      height: 2px;
-      background: var(--accent-blue);
-      transition: width 0.3s ease;
-    }
-
-    .nav-links a:hover {
-      color: var(--text-primary);
-    }
-
-    .nav-links a:hover::after {
-      width: 100%;
-    }
-
-    .nav-toggle {
-      display: none;
-      flex-direction: column;
-      gap: 5px;
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 4px;
-    }
-
-    .nav-toggle span {
-      display: block;
-      width: 24px;
-      height: 2px;
-      background: var(--text-secondary);
-      border-radius: 2px;
-      transition: all 0.3s ease;
-    }
-
-    /* ===== Container ===== */
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 24px;
-    }
-
-    /* ===== Section ===== */
-    .section {
-      padding: 100px 0;
-    }
-
-    .section-label {
-      font-family: var(--font-mono);
-      font-size: 0.8rem;
-      color: var(--accent-cyan);
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .section-label::before {
-      content: '';
-      display: inline-block;
-      width: 24px;
-      height: 1px;
-      background: var(--accent-cyan);
-    }
-
-    .section-title {
-      font-size: 2.2rem;
-      font-weight: 700;
-      margin-bottom: 48px;
-      color: var(--text-primary);
-      letter-spacing: -0.5px;
-    }
-
-    /* ===== Hero Section ===== */
-    .hero {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      padding-top: var(--nav-height);
-      position: relative;
-    }
-
-    .hero-content {
-      max-width: 800px;
-    }
-
-    .hero-badge {
-      display: inline-block;
-      font-family: var(--font-mono);
-      font-size: 0.85rem;
-      color: var(--accent-emerald);
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid rgba(16, 185, 129, 0.25);
-      padding: 6px 16px;
-      border-radius: 20px;
-      margin-bottom: 24px;
-    }
-
-    .hero h1 {
-      font-size: clamp(2.5rem, 6vw, 4rem);
-      font-weight: 800;
-      letter-spacing: -1.5px;
-      line-height: 1.15;
-      margin-bottom: 16px;
-    }
-
-    .hero h1 .gradient-text {
-      background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan), var(--accent-violet));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .hero-subtitle {
-      font-size: 1.2rem;
-      color: var(--text-secondary);
-      margin-bottom: 12px;
-      font-weight: 500;
-    }
-
-    .hero-subtitle strong {
-      color: var(--text-primary);
-      font-weight: 600;
-    }
-
-    .hero-desc {
-      font-size: 1.05rem;
-      color: var(--text-secondary);
-      line-height: 1.8;
-      margin-bottom: 32px;
-      max-width: 640px;
-    }
-
-    .hero-pills {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
-    .pill {
-      font-family: var(--font-mono);
-      font-size: 0.78rem;
-      padding: 6px 14px;
-      border-radius: 6px;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      color: var(--text-secondary);
-      transition: all 0.3s ease;
-      white-space: nowrap;
-    }
-
-    .pill:hover {
-      border-color: var(--accent-blue);
-      color: var(--accent-blue);
-      background: rgba(59, 130, 246, 0.08);
-    }
-
-    .hero-glow {
-      position: absolute;
-      top: 20%;
-      right: -10%;
-      width: 500px;
-      height: 500px;
-      background: radial-gradient(circle, rgba(59, 130, 246, 0.08), transparent 70%);
-      pointer-events: none;
-    }
-
-    .hero-glow-2 {
-      position: absolute;
-      bottom: 10%;
-      left: -5%;
-      width: 400px;
-      height: 400px;
-      background: radial-gradient(circle, rgba(139, 92, 246, 0.06), transparent 70%);
-      pointer-events: none;
-    }
-
-    /* ===== About Section ===== */
-    .about-card {
-      background: var(--bg-secondary);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 40px 48px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .about-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan), var(--accent-violet));
-    }
-
-    .about-card p {
-      font-size: 1.05rem;
-      color: var(--text-secondary);
-      line-height: 1.9;
-    }
-
-    .about-card p + p {
-      margin-top: 16px;
-    }
-
-    .about-highlight {
-      color: var(--text-primary);
-      font-weight: 500;
-    }
-
-    /* ===== Career Timeline ===== */
-    .timeline {
-      position: relative;
-      padding-left: 40px;
-    }
-
-    .timeline::before {
-      content: '';
-      position: absolute;
-      left: 7px;
-      top: 8px;
-      bottom: 8px;
-      width: 2px;
-      background: linear-gradient(to bottom, var(--accent-blue), var(--accent-violet), var(--accent-cyan));
-      border-radius: 2px;
-    }
-
-    .timeline-item {
-      position: relative;
-      margin-bottom: 56px;
-    }
-
-    .timeline-item:last-child {
-      margin-bottom: 0;
-    }
-
-    .timeline-dot {
-      position: absolute;
-      left: -40px;
-      top: 8px;
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background: var(--bg-primary);
-      border: 3px solid var(--accent-blue);
-      z-index: 1;
-    }
-
-    .timeline-item:nth-child(2) .timeline-dot {
-      border-color: var(--accent-violet);
-    }
-
-    .timeline-item:nth-child(3) .timeline-dot {
-      border-color: var(--accent-cyan);
-    }
-
-    .timeline-item:nth-child(4) .timeline-dot {
-      border-color: var(--accent-emerald);
-    }
-
-    .timeline-header {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: baseline;
-      gap: 12px;
-      margin-bottom: 8px;
-    }
-
-    .timeline-company {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: var(--text-primary);
-    }
-
-    .timeline-position {
-      font-size: 0.9rem;
-      color: var(--text-secondary);
-    }
-
-    .timeline-period {
-      font-family: var(--font-mono);
-      font-size: 0.8rem;
-      color: var(--accent-cyan);
-      background: rgba(6, 182, 212, 0.1);
-      padding: 3px 10px;
-      border-radius: 4px;
-    }
-
-    .timeline-roles {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 16px;
-      margin-top: 12px;
-    }
-
-    .role-badge {
-      font-size: 0.75rem;
-      font-weight: 600;
-      padding: 4px 12px;
-      border-radius: 4px;
-      letter-spacing: 0.3px;
-    }
-
-    .role-badge.ai { background: rgba(59, 130, 246, 0.15); color: var(--accent-blue); }
-    .role-badge.backend { background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald); }
-    .role-badge.infra { background: rgba(139, 92, 246, 0.15); color: var(--accent-violet); }
-    .role-badge.devops { background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); }
-    .role-badge.si { background: rgba(249, 115, 22, 0.15); color: #f97316; }
-    .role-badge.cloud { background: rgba(59, 130, 246, 0.15); color: var(--accent-blue); }
-    .role-badge.frontend { background: rgba(236, 72, 153, 0.15); color: #ec4899; }
-    .role-badge.server { background: rgba(139, 92, 246, 0.15); color: var(--accent-violet); }
-
-    .timeline-list {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .timeline-list li {
-      font-size: 0.95rem;
-      color: var(--text-secondary);
-      padding-left: 20px;
-      position: relative;
-      line-height: 1.7;
-    }
-
-    .timeline-list li::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 10px;
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--accent-blue);
-      opacity: 0.6;
-    }
-
-    .timeline-list li strong {
-      color: var(--text-primary);
-    }
-
-    .timeline-list a {
-      color: var(--accent-cyan);
-      text-decoration: underline;
-      text-underline-offset: 3px;
-    }
-
-    .timeline-year {
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
-      color: var(--accent-cyan);
-      margin-left: 6px;
-      opacity: 0.85;
-    }
-
-    .timeline-tag {
-      font-size: 0.75rem;
-      padding: 2px 8px;
-      border-radius: 4px;
-      background: rgba(6, 182, 212, 0.1);
-      color: var(--accent-cyan);
-    }
-
-    .timeline-group {
-      font-size: 0.82rem;
-      font-weight: 700;
-      color: var(--text-primary);
-      letter-spacing: 0.3px;
-      margin: 20px 0 10px;
-    }
-
-    .timeline-roles + .timeline-group {
-      margin-top: 4px;
-    }
-
-    .timeline-item:nth-child(2) .timeline-list li::before {
-      background: var(--accent-violet);
-    }
-
-    .timeline-item:nth-child(3) .timeline-list li::before {
-      background: var(--accent-cyan);
-    }
-
-    .timeline-item:nth-child(4) .timeline-list li::before {
-      background: var(--accent-emerald);
-    }
-
-    /* ===== Tech Stack Grid ===== */
-    .tech-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 20px;
-    }
-
-    .tech-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 24px;
-      transition: all 0.3s ease;
-    }
-
-    .tech-card:hover {
-      border-color: rgba(59, 130, 246, 0.3);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-    }
-
-    .tech-card-header {
-      font-size: 0.85rem;
-      font-weight: 700;
-      margin-bottom: 14px;
-      letter-spacing: 0.3px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .tech-card-header .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-    }
-
-    .tech-card:nth-child(1) .tech-card-header { color: var(--accent-blue); }
-    .tech-card:nth-child(1) .dot { background: var(--accent-blue); }
-    .tech-card:nth-child(2) .tech-card-header { color: var(--accent-violet); }
-    .tech-card:nth-child(2) .dot { background: var(--accent-violet); }
-    .tech-card:nth-child(3) .tech-card-header { color: var(--accent-cyan); }
-    .tech-card:nth-child(3) .dot { background: var(--accent-cyan); }
-    .tech-card:nth-child(4) .tech-card-header { color: var(--accent-emerald); }
-    .tech-card:nth-child(4) .dot { background: var(--accent-emerald); }
-    .tech-card:nth-child(5) .tech-card-header { color: var(--accent-blue); }
-    .tech-card:nth-child(5) .dot { background: var(--accent-blue); }
-    .tech-card:nth-child(6) .tech-card-header { color: var(--accent-violet); }
-    .tech-card:nth-child(6) .dot { background: var(--accent-violet); }
-    .tech-card:nth-child(7) .tech-card-header { color: var(--accent-cyan); }
-    .tech-card:nth-child(7) .dot { background: var(--accent-cyan); }
-    .tech-card:nth-child(8) .tech-card-header { color: var(--accent-emerald); }
-    .tech-card:nth-child(8) .dot { background: var(--accent-emerald); }
-
-    .tech-pills {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-
-    .tech-pill {
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
-      padding: 4px 10px;
-      border-radius: 4px;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      color: var(--text-secondary);
-    }
-
-    /* ===== Projects ===== */
-    .projects-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 24px;
-    }
-
-    .project-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 32px 28px;
-      transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      overflow: hidden;
-      cursor: pointer;
-    }
-
-    .project-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      border-radius: 16px;
-      padding: 1px;
-      background: linear-gradient(135deg, transparent, transparent);
-      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      -webkit-mask-composite: xor;
-      mask-composite: exclude;
-      transition: background 0.4s ease;
-      pointer-events: none;
-    }
-
-    .project-card:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 20px 60px rgba(59, 130, 246, 0.1), 0 0 40px rgba(59, 130, 246, 0.05);
-      border-color: rgba(59, 130, 246, 0.3);
-    }
-
-    .project-card:hover::before {
-      background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
-    }
-
-    .project-card-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-    }
-
-    .project-status {
-      font-family: var(--font-mono);
-      font-size: 0.7rem;
-      font-weight: 700;
-      padding: 4px 10px;
-      border-radius: 4px;
-      background: rgba(16, 185, 129, 0.15);
-      color: var(--accent-emerald);
-      letter-spacing: 0.5px;
-    }
-
-    .project-type {
-      font-size: 0.78rem;
-      color: var(--text-secondary);
-    }
-
-    .project-card h3 {
-      font-size: 1.3rem;
-      font-weight: 700;
-      margin-bottom: 12px;
-      color: var(--text-primary);
-    }
-
-    .project-card p {
-      font-size: 0.9rem;
-      color: var(--text-secondary);
-      line-height: 1.7;
-      margin-bottom: 20px;
-      flex-grow: 1;
-    }
-
-    .project-techs {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-bottom: 20px;
-    }
-
-    .project-tech-pill {
-      font-family: var(--font-mono);
-      font-size: 0.7rem;
-      padding: 3px 9px;
-      border-radius: 4px;
-      background: rgba(59, 130, 246, 0.08);
-      border: 1px solid rgba(59, 130, 246, 0.15);
-      color: var(--accent-blue);
-    }
-
-    .project-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: var(--accent-blue);
-      transition: gap 0.3s ease;
-    }
-
-    .project-card:hover .project-link {
-      gap: 12px;
-    }
-
-    .project-link-arrow {
-      transition: transform 0.3s ease;
-    }
-
-    .project-card:hover .project-link-arrow {
-      transform: translateX(4px);
-    }
-
-    /* ===== Certifications ===== */
-    .cert-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 16px;
-    }
-
-    .cert-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 20px 24px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      transition: all 0.3s ease;
-    }
-
-    .cert-card:hover {
-      border-color: rgba(59, 130, 246, 0.2);
-      transform: translateY(-2px);
-    }
-
-    .cert-icon {
-      width: 44px;
-      height: 44px;
-      border-radius: 10px;
-      background: rgba(59, 130, 246, 0.1);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      font-size: 1.2rem;
-    }
-
-    .cert-info {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .cert-name {
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: var(--text-primary);
-      margin-bottom: 4px;
-    }
-
-    .cert-meta {
-      font-size: 0.8rem;
-      color: var(--text-secondary);
-    }
-
-    .cert-meta span {
-      font-family: var(--font-mono);
-      color: var(--accent-cyan);
-      font-size: 0.75rem;
-    }
-
-    /* ===== Footer ===== */
-    .footer {
-      text-align: center;
-      padding: 40px 24px;
-      border-top: 1px solid var(--border);
-    }
-
-    .footer p {
-      font-size: 0.85rem;
-      color: var(--text-secondary);
-    }
-
-    /* ===== Responsive ===== */
-    @media (max-width: 1024px) {
-      .tech-grid {
-        grid-template-columns: repeat(2, 1fr);
+    /* index 전용 레이아웃·컴포넌트 — 색·글꼴·크기는 assets/site.css 토큰만 쓴다 */
+
+    /* ===== 레이아웃: 1023px 이하 1열, 1024px 이상 사이드바 + 본문 ===== */
+    .side { padding: 32px 24px 24px; border-bottom: 1px solid var(--rule); }
+    .side h1 { font-size: var(--fs-xl); line-height: 1.15; }
+    .side-role { margin-top: 12px; font-size: var(--fs-sm); color: var(--ink-2); }
+    .side .status { margin-top: 8px; align-items: flex-start; }
+    .side .status::before { flex: none; margin-top: 8px; }
+    .toc { margin-top: 20px; }
+    .toc ul { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: var(--fs-sm); }
+    .toc li { margin: 0; }
+    .toc a { color: var(--ink-2); text-decoration: none; }
+    .toc a:hover { color: var(--accent); text-decoration: underline; }
+    .toc a[aria-current] { color: var(--ink); font-weight: 600; }
+
+    .main { min-width: 0; padding: 40px 24px 0; }
+
+    @media (min-width: 1152px) {
+      .layout { display: grid; grid-template-columns: 17.5rem minmax(0, 1fr); }
+      .side {
+        position: sticky; top: 0; align-self: start; height: 100vh; overflow-y: auto;
+        padding: 48px 28px; border-bottom: 0; border-right: 1px solid var(--rule);
       }
-
-      .projects-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
+      .toc { margin-top: 40px; }
+      .toc ul { display: block; }
+      .toc li + li { margin-top: 6px; }
+      .main { max-width: 62rem; padding: 56px 56px 0; }
     }
 
-    @media (max-width: 768px) {
-      .nav-links {
-        display: none;
-        position: absolute;
-        top: var(--nav-height);
-        left: 0;
-        right: 0;
-        flex-direction: column;
-        background: rgba(10, 15, 30, 0.97);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border-bottom: 1px solid var(--border);
-        padding: 16px 24px;
-        gap: 16px;
-      }
+    /* ===== 섹션 공통 ===== */
+    .sec { padding-top: 88px; }
+    .sec > h2 { margin-bottom: 24px; }
+    .prose, .sec-intro { max-width: var(--measure); }
+    .sec-intro { margin-bottom: 24px; color: var(--ink-2); }
 
-      .nav-links.open {
-        display: flex;
-      }
+    /* ===== 히어로 ===== */
+    .hero-sub { font-size: var(--fs-sm); font-weight: 500; color: var(--ink-2); }
+    .hero-desc { margin-top: 12px; max-width: var(--measure); font-size: var(--fs-md); line-height: 1.65; }
+    .hero .chips { margin-top: 20px; }
 
-      .nav-toggle {
-        display: flex;
-      }
-
-      .hero h1 {
-        font-size: 2.2rem;
-      }
-
-      .hero-subtitle {
-        font-size: 1.05rem;
-      }
-
-      .section {
-        padding: 72px 0;
-      }
-
-      .section-title {
-        font-size: 1.8rem;
-      }
-
-      .timeline {
-        padding-left: 32px;
-      }
-
-      .timeline-dot {
-        left: -32px;
-        width: 14px;
-        height: 14px;
-      }
-
-      .about-card {
-        padding: 28px 24px;
-      }
-
-      .tech-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .projects-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .cert-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .timeline-header {
-        flex-direction: column;
-        gap: 6px;
-      }
+    /* ===== 시스템 구성도 ===== */
+    .arch-fig { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--rule); }
+    .arch-fig h2 { font-size: var(--fs-md); }
+    .arch-wrap { margin-top: 20px; overflow-x: auto; }
+    .arch { display: block; width: 100%; height: auto; }
+    .arch text { font-family: var(--font-sans); font-size: 15px; fill: var(--ink); text-anchor: middle; dominant-baseline: central; }
+    .arch .t { font-weight: 600; }
+    .arch .e { font-weight: 500; }
+    .arch .e2 { font-weight: 500; font-size: 14px; }
+    .arch .s { font-size: 14px; fill: var(--ink-3); }
+    .arch .mo { font-family: var(--font-mono); }
+    .arch .h text, .arch .lt { text-anchor: start; }
+    .arch .h text { font-size: 14px; font-weight: 500; fill: var(--ink-3); }
+    .arch rect { fill: var(--surface); stroke: var(--rule-strong); stroke-width: 1; }
+    .arch .f { stroke: var(--accent); }
+    .arch a { text-decoration: none; }
+    .arch a:hover .f, .arch a:focus-visible .f { fill: var(--accent-soft); }
+    .arch a:focus-visible { outline: none; }
+    .arch a:focus-visible .f { stroke-width: 2.5; }
+    .arch .sep { fill: none; stroke: var(--rule); }
+    .arch .w { fill: none; stroke: var(--accent); stroke-width: 1.5; stroke-linejoin: round; pointer-events: none; }
+    @media (prefers-reduced-motion: no-preference) {
+      /* 페이지 로드 시 연결선만 한 번 그린다 (열 순서대로 지연, 전체 약 1.2초) */
+      .arch .w { stroke-dasharray: 1; stroke-dashoffset: 1; animation: wire 0.45s ease-out forwards; }
+      .arch .w2 { animation-delay: 0.25s; }
+      .arch .w3 { animation-delay: 0.5s; }
+      .arch .w4 { animation-delay: 0.75s; }
     }
+    @keyframes wire { to { stroke-dashoffset: 0; } }
+    /* ponytail: 축소 시 SVG 글자 12px 이상 유지 — 760px 미만 폭에서는 래퍼가 가로 스크롤 */
+    .arch { min-width: 760px; }
 
-    @media (max-width: 480px) {
-      .hero h1 {
-        font-size: 1.8rem;
-      }
+    /* ===== 소개 ===== */
+    .traits { display: flex; flex-wrap: wrap; gap: 0 8px; margin-top: 20px; padding: 0; list-style: none; font-size: var(--fs-sm); color: var(--ink-3); }
+    .traits li { margin: 0; }
+    .traits li + li::before { content: "·"; margin-right: 8px; }
+    .about-notion { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--rule); font-size: var(--fs-sm); color: var(--ink-2); }
 
-      .container {
-        padding: 0 16px;
-      }
+    /* ===== 행 목록 (경력·교육 과정 프로젝트): 왼쪽 메타 + 오른쪽 본문 ===== */
+    .entry { display: grid; grid-template-columns: 11rem minmax(0, 1fr); gap: 8px 32px; padding: 32px 0; border-top: 1px solid var(--rule); }
+    .entry-meta { font-size: var(--fs-sm); line-height: 1.6; color: var(--ink-3); padding-top: 3px; }
+    .job-meta { display: flex; flex-wrap: wrap; gap: 2px 16px; margin-top: 2px; font-size: var(--fs-sm); color: var(--ink-2); }
+    .roles { display: inline; padding: 0; list-style: none; color: var(--ink-3); }
+    .roles li { display: inline; }
+    .roles li + li::before { content: " · "; }
+    .entry h4 { margin-top: 24px; font-size: var(--fs-sm); color: var(--ink-2); }
+    .items { margin-top: 10px; font-size: var(--fs-sm); line-height: 1.7; }
+    .entry h4 + .items { margin-top: 6px; }
+    .items li { position: relative; }
+    .items li::marker { color: var(--ink-3); }
+    .items li:has(.yr) { padding-right: 4rem; }
+    .yr { position: absolute; top: 0; right: 0; font-family: var(--font-mono); font-size: var(--fs-xs); line-height: calc(var(--fs-sm) * 1.7); color: var(--ink-3); }
+    .entry .desc { margin-top: 6px; color: var(--ink-2); }
+    .entry .chips { margin-top: 14px; }
+    .file { margin-left: 6px; font-size: var(--fs-xs); font-weight: 500; color: var(--ink-3); }
+
+    /* ===== 프로젝트 행 ===== */
+    .proj { display: grid; grid-template-columns: minmax(0, 1fr) 11rem; gap: 12px 32px; padding: 28px 0; border-top: 1px solid var(--rule); }
+    .proj-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; }
+    .proj h3 a { color: var(--ink); text-decoration: none; }
+    .proj h3 a:hover { color: var(--accent); text-decoration: underline; }
+    .proj .desc { margin-top: 8px; max-width: var(--measure); color: var(--ink-2); }
+    .proj .chips { margin-top: 14px; }
+    .more { display: inline-block; margin-top: 12px; font-size: var(--fs-sm); }
+    .proj-metric { text-align: right; padding-top: 4px; }
+
+    /* ===== 기술 스택 ===== */
+    .stack { display: grid; grid-template-columns: 13rem minmax(0, 1fr); border-bottom: 1px solid var(--rule); }
+    .stack dt, .stack dd { padding: 12px 0; border-top: 1px solid var(--rule); }
+    .stack dt { padding-right: 24px; font-size: var(--fs-sm); font-weight: 600; }
+    .stack dd { color: var(--ink-2); }
+
+    /* ===== 자격증 ===== */
+    .certs { max-width: var(--measure); }
+
+    @media (max-width: 640px) {
+      .sec { padding-top: 64px; }
+      .hero-desc { font-size: var(--fs-base); }
+      .entry, .proj, .stack { grid-template-columns: minmax(0, 1fr); }
+      .entry { gap: 4px; }
+      .proj-metric { text-align: left; }
+      .stack dd { padding-top: 0; border-top: 0; }
     }
   </style>
 </head>
 <body>
+<div class="layout">
 
-  <!-- ===== Navigation ===== -->
-  <nav class="nav">
-    <div class="nav-inner">
-      <a href="#hero" class="nav-logo">AX<span>.</span>DEV</a>
-      <ul class="nav-links" id="navLinks">
-        <li><a href="#hero" onclick="closeNav()">Home</a></li>
-        <li><a href="#about" onclick="closeNav()">About</a></li>
-        <li><a href="#career" onclick="closeNav()">Career</a></li>
-        <li><a href="#tech" onclick="closeNav()">Tech Stack</a></li>
-        <li><a href="#projects" onclick="closeNav()">Projects</a></li>
-        <li><a href="#certs" onclick="closeNav()">Certifications</a></li>
+  <header class="side">
+    <h1>Backend &amp; AI Platform Engineer</h1>
+    <p class="side-role">5년차 백엔드 &middot; AI 플랫폼 엔지니어</p>
+    <p class="status">Open to Backend &middot; AI Engineer roles</p>
+    <nav class="toc" aria-label="섹션 목차">
+      <ul>
+        <li><a href="#about">소개</a></li>
+        <li><a href="#career">경력</a></li>
+        <li><a href="#projects">프로젝트</a></li>
+        <li><a href="#tech">기술 스택</a></li>
+        <li><a href="#certs">자격증</a></li>
+        <li><a href="#past-projects">교육 과정 프로젝트</a></li>
       </ul>
-      <button class="nav-toggle" id="navToggle" onclick="toggleNav()" aria-label="Toggle navigation">
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
-    </div>
-  </nav>
+    </nav>
+  </header>
 
-  <!-- ===== Hero Section ===== -->
-  <section class="hero section" id="hero">
-    <div class="container">
-      <div class="hero-content">
-        <div class="hero-badge reveal">Open to Backend &middot; AI Engineer roles</div>
-        <h1 class="reveal reveal-delay-1"><span class="gradient-text">Backend &amp; AI</span><br>Platform Engineer</h1>
-        <p class="hero-subtitle reveal reveal-delay-2">
-          <strong>5년차 백엔드 &middot; AI 플랫폼 엔지니어</strong> &nbsp;|&nbsp; LLM Serving &middot; RAG/GraphRAG &middot; Kubernetes &middot; GitOps
-        </p>
-        <p class="hero-desc reveal reveal-delay-3">
-          백엔드 PL로 서비스를 리딩하고, 사내 AI 플랫폼을 바닥부터 설계&middot;운영합니다.<br>
-          LLM 셀프호스팅부터 RAG&middot;OCR&middot;이미지 생성 모델 서빙, 이를 받치는 K8s&middot;GitOps 인프라까지 &mdash;
-          전체 흐름을 이해하고 끝까지 책임지는 개발자입니다.
-        </p>
-        <div class="hero-pills reveal reveal-delay-4">
-          <span class="pill">Spring Boot</span>
-          <span class="pill">FastAPI</span>
-          <span class="pill">vLLM</span>
-          <span class="pill">Weaviate</span>
-          <span class="pill">Neo4j</span>
-          <span class="pill">Kubernetes</span>
-          <span class="pill">ArgoCD</span>
+  <main class="main">
+
+    <!-- ===== 히어로 ===== -->
+    <section class="hero">
+      <p class="hero-sub">LLM Serving &middot; RAG/GraphRAG &middot; Kubernetes &middot; GitOps</p>
+      <p class="hero-desc">
+        백엔드 PL로 서비스를 리딩하고, 사내 AI 플랫폼을 바닥부터 설계&middot;운영합니다.<br>
+        LLM 셀프호스팅부터 RAG&middot;OCR&middot;이미지 생성 모델 서빙, 이를 받치는 K8s&middot;GitOps 인프라까지 &mdash;
+        전체 흐름을 이해하고 끝까지 책임지는 개발자입니다.
+      </p>
+      <ul class="chips">
+        <li>Spring Boot</li>
+        <li>FastAPI</li>
+        <li>vLLM</li>
+        <li>Weaviate</li>
+        <li>Neo4j</li>
+        <li>Kubernetes</li>
+        <li>ArgoCD</li>
+      </ul>
+
+      <div class="arch-fig">
+        <h2>지금 운영 중인 사내 AI 플랫폼</h2>
+        <p class="muted small">상자를 누르면 해당 프로젝트로 이동합니다.</p>
+        <div class="arch-wrap">
+          <svg class="arch" viewBox="-4 -2 888 444" role="group" aria-labelledby="arch-t arch-d">
+            <title id="arch-t">사내 AI 플랫폼 구성도</title>
+            <desc id="arch-d">NVIDIA DGX Spark 2대(QSFP 연동)에서 vLLM, SGLang, TensorRT, Ollama, ComfyUI로 모델을 서빙하고, RAG(Weaviate Hybrid Search), GraphRAG(Neo4j, TypeDB), OCR(PaddleOCR-VL), 이미지 생성(FLUX, Z-Image) 서비스를 MCP Server를 거쳐 Claude Code, Gemini CLI, 사내 서비스(Keycloak SSO)에 제공합니다. 전체는 K3s 클러스터에서 GitLab, Jenkins, Nexus, ArgoCD GitOps 흐름으로 배포되고 Prometheus, Grafana로 모니터링하며, Jenkins는 Device Farm(Mac mini, 실물 단말 8대)과 실물 모바일 E2E로 이어집니다.</desc>
+
+            <!-- 열 머리 -->
+            <g class="h">
+              <text x="0" y="14">하드웨어</text>
+              <text x="190" y="14">서빙</text>
+              <text x="350" y="14">서비스</text>
+              <text x="590" y="14">접점</text>
+            </g>
+
+            <!-- 1열: 하드웨어 -->
+            <rect x="0" y="118" width="160" height="90" rx="6"/>
+            <text class="t" x="80" y="144">NVIDIA DGX Spark</text>
+            <text class="e mo" x="80" y="166">×2</text>
+            <text class="s" x="80" y="188">QSFP 연동</text>
+
+            <!-- 2열: 서빙 -->
+            <rect x="190" y="36" width="130" height="254" rx="6"/>
+            <path class="sep" d="M206 103 H304 M206 143 H304 M206 183 H304 M206 223 H304"/>
+            <text class="e" x="255" y="83">vLLM</text>
+            <text class="e" x="255" y="123">SGLang</text>
+            <text class="e" x="255" y="163">TensorRT</text>
+            <text class="e" x="255" y="203">Ollama</text>
+            <text class="e" x="255" y="243">ComfyUI</text>
+
+            <!-- 3열: 서비스 -->
+            <a href="projects/rag.html">
+              <rect class="f" x="350" y="36" width="210" height="56" rx="6"/>
+              <text class="t" x="455" y="55">RAG</text>
+              <text class="s" x="455" y="75">Weaviate Hybrid Search</text>
+            </a>
+            <rect x="350" y="102" width="210" height="56" rx="6"/>
+            <text class="t" x="455" y="121">GraphRAG</text>
+            <text class="s" x="455" y="141">Neo4j · TypeDB</text>
+            <a href="projects/ocr.html">
+              <rect class="f" x="350" y="168" width="210" height="56" rx="6"/>
+              <text class="t" x="455" y="187">OCR</text>
+              <text class="s" x="455" y="207">PaddleOCR-VL</text>
+            </a>
+            <rect x="350" y="234" width="210" height="56" rx="6"/>
+            <text class="t" x="455" y="253">이미지 생성</text>
+            <text class="s" x="455" y="273">FLUX · Z-Image</text>
+
+            <!-- 4열: 접점 -->
+            <rect x="590" y="133" width="110" height="60" rx="6"/>
+            <text class="t" x="645" y="163">MCP Server</text>
+            <rect x="730" y="71" width="150" height="52" rx="6"/>
+            <text class="e" x="805" y="97">Claude Code</text>
+            <rect x="730" y="137" width="150" height="52" rx="6"/>
+            <text class="e" x="805" y="163">Gemini CLI</text>
+            <rect x="730" y="203" width="150" height="52" rx="6"/>
+            <text class="e" x="805" y="220">사내 서비스</text>
+            <text class="s" x="805" y="240">Keycloak SSO</text>
+
+            <!-- 하단 띠: K3s 클러스터 · GitOps -->
+            <a href="projects/gitops.html">
+              <rect class="f" x="0" y="318" width="624" height="118" rx="6"/>
+              <text class="t lt" x="16" y="340">K3s 클러스터 · GitOps</text>
+              <rect x="16" y="358" width="82" height="36" rx="4"/>
+              <text class="e2" x="57" y="376">GitLab</text>
+              <rect x="120" y="358" width="82" height="36" rx="4"/>
+              <text class="e2" x="161" y="376">Jenkins</text>
+              <rect x="224" y="358" width="82" height="36" rx="4"/>
+              <text class="e2" x="265" y="376">Nexus</text>
+              <rect x="328" y="358" width="82" height="36" rx="4"/>
+              <text class="e2" x="369" y="376">ArgoCD</text>
+              <rect x="432" y="358" width="176" height="36" rx="4"/>
+              <text class="e2" x="520" y="376">Prometheus · Grafana</text>
+            </a>
+
+            <!-- 하단 오른쪽: 실물 단말 테스트 -->
+            <a href="projects/device-farm.html">
+              <rect class="f" x="652" y="318" width="228" height="52" rx="6"/>
+              <text class="t" x="766" y="336">Device Farm</text>
+              <text class="s" x="766" y="355">Mac mini · 실물 단말 <tspan class="mo">8</tspan>대</text>
+            </a>
+            <a href="projects/pingpong.html">
+              <rect class="f" x="652" y="384" width="228" height="52" rx="6"/>
+              <text class="t" x="766" y="410">실물 모바일 E2E</text>
+            </a>
+
+            <!-- 연결선 (선 끝 화살촉까지 한 경로로 이어 그려 대시 애니메이션이 끝에서 화살촉을 그린다) -->
+            <path class="w w1" pathLength="1" d="M160 163 H189 l-6 -4 l6 4 l-6 4"/>
+            <path class="w w2" pathLength="1" d="M320 163 H335 V64 H349 l-6 -4 l6 4 l-6 4"/>
+            <path class="w w2" pathLength="1" d="M320 163 H335 V130 H349 l-6 -4 l6 4 l-6 4"/>
+            <path class="w w2" pathLength="1" d="M320 163 H335 V196 H349 l-6 -4 l6 4 l-6 4"/>
+            <path class="w w2" pathLength="1" d="M320 163 H335 V262 H349 l-6 -4 l6 4 l-6 4"/>
+            <path class="w w3" pathLength="1" d="M560 64 H575 V163 H589 l-6 -4 l6 4 l-6 4"/>
+            <path class="w w3" pathLength="1" d="M560 130 H575 V163 H589 l-6 -4 l6 4 l-6 4"/>
+            <path class="w w3" pathLength="1" d="M560 196 H575 V163 H589 l-6 -4 l6 4 l-6 4"/>
+            <path class="w w3" pathLength="1" d="M560 262 H575 V163 H589 l-6 -4 l6 4 l-6 4"/>
+            <path class="w w4" pathLength="1" d="M700 163 H715 V97 H729 l-6 -4 l6 4 l-6 4"/>
+            <path class="w w4" pathLength="1" d="M700 163 H729 l-6 -4 l6 4 l-6 4"/>
+            <path class="w w4" pathLength="1" d="M700 163 H715 V229 H729 l-6 -4 l6 4 l-6 4"/>
+            <path class="w w2" pathLength="1" d="M98 376 H119 l-6 -4 l6 4 l-6 4"/>
+            <path class="w w3" pathLength="1" d="M202 376 H223 l-6 -4 l6 4 l-6 4"/>
+            <path class="w w4" pathLength="1" d="M306 376 H327 l-6 -4 l6 4 l-6 4"/>
+            <path class="w w4" pathLength="1" d="M161 394 V420 H636 V344 H651 l-6 -4 l6 4 l-6 4"/>
+            <path class="w w4" pathLength="1" d="M161 394 V420 H636 V410 H651 l-6 -4 l6 4 l-6 4"/>
+          </svg>
         </div>
       </div>
-    </div>
-    <div class="hero-glow"></div>
-    <div class="hero-glow-2"></div>
-  </section>
+    </section>
 
-  <!-- ===== About Section ===== -->
-  <section class="section" id="about">
-    <div class="container">
-      <div class="section-label reveal">About</div>
-      <h2 class="section-title reveal">About Me</h2>
-      <div class="about-card reveal reveal-delay-1">
+    <!-- ===== 소개 ===== -->
+    <section class="sec" id="about">
+      <h2>소개</h2>
+      <div class="prose">
         <p>
-          SM&middot;SI&middot;서비스 개발을 거친 5년 동안 <span class="about-highlight">요구사항 분석부터 설계, 개발, 배포, 운영까지 서비스의 전체 흐름</span>을 직접 책임져 왔습니다. 선거관리위원회&middot;한국수력원자력&middot;씨티은행 등 6개 이상 엔터프라이즈 고객사의 규정 준수 솔루션 고도화, KERIS 프로젝트 전 단계 개발, 미래엔 모아보드 백엔드 PL까지 도메인과 역할의 폭을 넓혀 왔습니다.
+          SM&middot;SI&middot;서비스 개발을 거친 5년 동안 <strong>요구사항 분석부터 설계, 개발, 배포, 운영까지 서비스의 전체 흐름</strong>을 직접 책임져 왔습니다. 선거관리위원회&middot;한국수력원자력&middot;씨티은행 등 6개 이상 엔터프라이즈 고객사의 규정 준수 솔루션 고도화, KERIS 프로젝트 전 단계 개발, 미래엔 모아보드 백엔드 PL까지 도메인과 역할의 폭을 넓혀 왔습니다.
         </p>
         <p>
-          현재 (주)엑스티에서 <span class="about-highlight">사내 AI 플랫폼을 초기 단계부터 설계&middot;구축</span>하고 있습니다. vLLM&middot;SGLang&middot;TensorRT 기반 LLM 셀프호스팅, RAG/GraphRAG, VLM 기반 OCR, 이미지 생성 모델을 직접 서빙하고, 이를 K3s&middot;GitOps&middot;모니터링 인프라 위에서 운영합니다. 동시에 AI 개발 도구를 실무 백엔드 프로젝트에 적극 도입해 <span class="about-highlight">팀의 개발 생산성</span>을 끌어올리고 있습니다.
+          현재 (주)엑스티에서 <strong>사내 AI 플랫폼을 초기 단계부터 설계&middot;구축</strong>하고 있습니다. vLLM&middot;SGLang&middot;TensorRT 기반 LLM 셀프호스팅, RAG/GraphRAG, VLM 기반 OCR, 이미지 생성 모델을 직접 서빙하고, 이를 K3s&middot;GitOps&middot;모니터링 인프라 위에서 운영합니다. 동시에 AI 개발 도구를 실무 백엔드 프로젝트에 적극 도입해 <strong>팀의 개발 생산성</strong>을 끌어올리고 있습니다.
         </p>
         <p>
-          <span class="about-highlight">맡은 일을 넘어 주인의식을 갖고</span> 함께 해결하며, 먼저 시도하고 먼저 피드백을 구하는 방식으로 팀과 함께 결과를 만듭니다.
+          <strong>맡은 일을 넘어 주인의식을 갖고</strong> 함께 해결하며, 먼저 시도하고 먼저 피드백을 구하는 방식으로 팀과 함께 결과를 만듭니다.
         </p>
-        <div class="hero-pills" style="margin-top:24px;">
-          <span class="pill"># 흐름 이해</span>
-          <span class="pill"># 객체지향 설계</span>
-          <span class="pill"># 주인의식</span>
-          <span class="pill"># 능동적 피드백</span>
-        </div>
+        <ul class="traits">
+          <li>흐름 이해</li>
+          <li>객체지향 설계</li>
+          <li>주인의식</li>
+          <li>능동적 피드백</li>
+        </ul>
+        <p class="about-notion">
+          프로젝트별 설계 노트와 기술 정리는 노션에 모아 두었습니다.
+          <a href="https://rainy-ethernet-a6c.notion.site/AX-Developer-Portfolio-d8840e6213d6418ea6893baea8c4d210" target="_blank" rel="noopener">Notion 바로가기 &#8599;</a>
+        </p>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ===== Career Section ===== -->
-  <section class="section" id="career">
-    <div class="container">
-      <div class="section-label reveal">Experience</div>
-      <h2 class="section-title reveal">Career</h2>
+    <!-- ===== 경력 ===== -->
+    <section class="sec" id="career">
+      <h2>경력</h2>
 
-      <div class="timeline">
-        <!-- Company 1 -->
-        <div class="timeline-item reveal">
-          <div class="timeline-dot"></div>
-          <div class="timeline-header">
-            <span class="timeline-company">(주)엑스티(XT)</span>
-            <span class="timeline-position">대리</span>
-            <span class="timeline-period">2024.10 ~ 현재</span>
+      <article class="entry">
+        <p class="entry-meta mono">2024.10 ~ 현재</p>
+        <div>
+          <h3>(주)엑스티(XT)</h3>
+          <div class="job-meta">
+            <span>대리</span>
+            <ul class="roles"><li>AI/ML</li><li>Backend</li><li>Infra</li><li>DevOps</li></ul>
           </div>
-          <div class="timeline-roles">
-            <span class="role-badge ai">AI/ML</span>
-            <span class="role-badge backend">Backend</span>
-            <span class="role-badge infra">Infra</span>
-            <span class="role-badge devops">DevOps</span>
-          </div>
-          <div class="timeline-group">AI 플랫폼 &middot; 모델 서빙</div>
-          <ul class="timeline-list">
-            <li>사내 AI 플랫폼 초기 아키텍처 설계 &mdash; vLLM &middot; SGLang &middot; TensorRT &middot; Ollama 기반 LLM 셀프호스팅 환경 구축 <span class="timeline-year">2025</span></li>
-            <li>오픈 LLM(Qwen, HyperCLOVA X, EXAONE 등) 서빙 및 사내 서비스 연동 <span class="timeline-year">2026</span></li>
-            <li>HuggingFace 이미지 생성 모델(Z-Image, FLUX 등) + ComfyUI 구축 및 연동 <span class="timeline-year">2026</span></li>
+          <h4>AI 플랫폼 &middot; 모델 서빙</h4>
+          <ul class="items">
+            <li>사내 AI 플랫폼 초기 아키텍처 설계 &mdash; vLLM &middot; SGLang &middot; TensorRT &middot; Ollama 기반 LLM 셀프호스팅 환경 구축 <span class="yr">2025</span></li>
+            <li>오픈 LLM(Qwen, HyperCLOVA X, EXAONE 등) 서빙 및 사내 서비스 연동 <span class="yr">2026</span></li>
+            <li>HuggingFace 이미지 생성 모델(Z-Image, FLUX 등) + ComfyUI 구축 및 연동 <span class="yr">2026</span></li>
             <li>MCP 기반 AI 도구 연동 &mdash; Claude Code &middot; Gemini CLI에서 사내 RAG &middot; OCR &middot; LLM 직접 호출</li>
           </ul>
-          <div class="timeline-group">RAG &middot; GraphRAG &middot; OCR</div>
-          <ul class="timeline-list">
-            <li>사내 문서 RAG 파이프라인 전체 설계 및 구축 (Weaviate Hybrid Search, 5-Phase 청킹, 3-Tier 권한) <span class="timeline-year">2025</span></li>
-            <li>GraphRAG 구축 및 연동 (Neo4j, TypeDB) <span class="timeline-year">2026</span></li>
-            <li>Enterprise OCR 시스템 구축 &mdash; PaddleOCR-VL &middot; Granite, MCP 바이너리 전송 한계 우회 <span class="timeline-year">2026</span></li>
+          <h4>RAG &middot; GraphRAG &middot; OCR</h4>
+          <ul class="items">
+            <li>사내 문서 RAG 파이프라인 전체 설계 및 구축 (Weaviate Hybrid Search, 5-Phase 청킹, 3-Tier 권한) <span class="yr">2025</span></li>
+            <li>GraphRAG 구축 및 연동 (Neo4j, TypeDB) <span class="yr">2026</span></li>
+            <li>Enterprise OCR 시스템 구축 &mdash; PaddleOCR-VL &middot; Granite, MCP 바이너리 전송 한계 우회 <span class="yr">2026</span></li>
           </ul>
-          <div class="timeline-group">백엔드 서비스 개발</div>
-          <ul class="timeline-list">
-            <li>성원애드피아 백엔드 개발 &mdash; AI 활용 개발 프로세스 적용 <span class="timeline-year">현재</span></li>
-            <li><a href="https://moaboard.m-teacher.co.kr/" target="_blank" rel="noopener">미래엔 모아보드 &#8599;</a> <span class="timeline-tag">소켓 인터랙티브 화이트보드</span> 애플리케이션 백엔드 개발 <strong>PL</strong> &mdash; AI 활용 개발로 성공적 수행 <span class="timeline-year">2026</span></li>
-            <li>초록우산 애플리케이션 백엔드 개발 <span class="timeline-year">2025</span></li>
+          <h4>백엔드 서비스 개발</h4>
+          <ul class="items">
+            <li>성원애드피아 백엔드 개발 &mdash; AI 활용 개발 프로세스 적용 <span class="yr">현재</span></li>
+            <li><a href="https://moaboard.m-teacher.co.kr/" target="_blank" rel="noopener">미래엔 모아보드 &#8599;</a> <span class="chip">소켓 인터랙티브 화이트보드</span> 애플리케이션 백엔드 개발 <strong>PL</strong> &mdash; AI 활용 개발로 성공적 수행 <span class="yr">2026</span></li>
+            <li>초록우산 애플리케이션 백엔드 개발 <span class="yr">2025</span></li>
           </ul>
-          <div class="timeline-group">DevOps &middot; 인프라</div>
-          <ul class="timeline-list">
+          <h4>DevOps &middot; 인프라</h4>
+          <ul class="items">
             <li>사내 쿠버네티스(K3s) 플랫폼 구축 &middot; 운영 &mdash; Jenkins &middot; ArgoCD &middot; Prometheus &middot; Grafana 자동화 워크플로우</li>
-            <li>GitOps CI/CD 설계 (Jenkins + ArgoCD + Kustomize) &mdash; git push 한 번으로 빌드부터 배포까지 자동화 <span class="timeline-year">2025</span></li>
+            <li>GitOps CI/CD 설계 (Jenkins + ArgoCD + Kustomize) &mdash; git push 한 번으로 빌드부터 배포까지 자동화 <span class="yr">2025</span></li>
             <li>서버 인프라 &middot; 배포 체계 구축 &mdash; Proxy(Nginx) / Frontend(Apache, Nginx) / Backend(Tomcat)</li>
             <li>실물 단말 Device Farm &middot; Cross-App E2E 테스트 자동화 총괄</li>
             <li>Hoppscotch(API 테스트 플랫폼) 셀프호스팅 및 운영</li>
           </ul>
         </div>
+      </article>
 
-        <!-- Company 2 -->
-        <div class="timeline-item reveal">
-          <div class="timeline-dot"></div>
-          <div class="timeline-header">
-            <span class="timeline-company">(주)에듀에이아이</span>
-            <span class="timeline-position">주임/계장</span>
-            <span class="timeline-period">2023.05 ~ 2024.10 (1년 6개월)</span>
+      <article class="entry">
+        <p class="entry-meta mono">2023.05 ~ 2024.10 (1년 6개월)</p>
+        <div>
+          <h3>(주)에듀에이아이</h3>
+          <div class="job-meta">
+            <span>주임/계장</span>
+            <ul class="roles"><li>Backend</li><li>AWS</li><li>Frontend</li><li>SI</li></ul>
           </div>
-          <div class="timeline-roles">
-            <span class="role-badge backend">Backend</span>
-            <span class="role-badge cloud">AWS</span>
-            <span class="role-badge frontend">Frontend</span>
-            <span class="role-badge si">SI</span>
-          </div>
-          <ul class="timeline-list">
+          <ul class="items">
             <li>KERIS 프로젝트 전 단계 담당 &mdash; 개발환경 구성, MVC 백엔드 로직, React 프론트엔드, AWS 인프라, Git 형상관리, SSL, 설치 &middot; 배포</li>
             <li>Docker 기반 사내 시스템 개발 및 운영</li>
             <li>AWS 클라우드 운영 &mdash; EC2, VPC, S3, RDS, 인/아웃바운드 보안 규칙, 로드밸런싱</li>
             <li>RESTful API 기반 자연어 처리 API 연동 및 챗봇 프로그램 개발</li>
           </ul>
         </div>
+      </article>
 
-        <!-- Company 3 -->
-        <div class="timeline-item reveal">
-          <div class="timeline-dot"></div>
-          <div class="timeline-header">
-            <span class="timeline-company">엠싱크</span>
-            <span class="timeline-position">개발2팀 사원</span>
-            <span class="timeline-period">2023.01 ~ 2023.04 (4개월)</span>
+      <article class="entry">
+        <p class="entry-meta mono">2023.01 ~ 2023.04 (4개월)</p>
+        <div>
+          <h3>엠싱크</h3>
+          <div class="job-meta">
+            <span>개발2팀 사원</span>
+            <ul class="roles"><li>Backend</li></ul>
           </div>
-          <div class="timeline-roles">
-            <span class="role-badge backend">Backend</span>
-          </div>
-          <ul class="timeline-list">
+          <ul class="items">
             <li>교촌 앱 백엔드 추가 기능 개발 및 운영 관리</li>
           </ul>
         </div>
+      </article>
 
-        <!-- Company 4 -->
-        <div class="timeline-item reveal">
-          <div class="timeline-dot"></div>
-          <div class="timeline-header">
-            <span class="timeline-company">젠솔소프트</span>
-            <span class="timeline-position">TS&amp;M팀(SM) 사원</span>
-            <span class="timeline-period">2021.09 ~ 2022.11 (1년 3개월)</span>
+      <article class="entry">
+        <p class="entry-meta mono">2021.09 ~ 2022.11 (1년 3개월)</p>
+        <div>
+          <h3>젠솔소프트</h3>
+          <div class="job-meta">
+            <span>TS&amp;M팀(SM) 사원</span>
+            <ul class="roles"><li>SM</li><li>Server Ops</li></ul>
           </div>
-          <div class="timeline-roles">
-            <span class="role-badge backend">SM</span>
-            <span class="role-badge server">Server Ops</span>
-          </div>
-          <ul class="timeline-list">
+          <ul class="items">
             <li>기업용 내부 법률 &middot; 규정 준수 솔루션 고도화 및 운영 &mdash; 선거관리위원회, 기술보증기금, 교직원공제회, 한국수력원자력, 씨티은행, 아시아나 등 6개 이상 고객사</li>
             <li>WAS/DB &middot; 형상관리 서버 운영</li>
             <li>고객사 요구 기반 사이트 개선 및 네트워크 작업</li>
           </ul>
         </div>
+      </article>
+    </section>
+
+    <!-- ===== 프로젝트 ===== -->
+    <section class="sec" id="projects">
+      <h2>프로젝트</h2>
+
+      <article class="proj">
+        <div>
+          <div class="proj-head">
+            <h3><a href="projects/rag.html">RAG 파이프라인</a></h3>
+            <span class="status">운영중</span>
+          </div>
+          <p class="desc">50명 규모 조직의 분산 문서를 통합 검색하는 RAG 시스템을 설계부터 운영까지 주도. GPU 임베딩 20배 가속, 검색 정확도 +27.9%, 3-Tier 권한 필터</p>
+          <ul class="chips"><li>vLLM</li><li>Weaviate</li><li>FastAPI</li><li>K8s</li><li>Celery</li><li>Keycloak</li></ul>
+          <a class="more" href="projects/rag.html">자세히 보기</a>
+        </div>
+        <div class="proj-metric">
+          <div class="metric-num">+27.9%</div>
+          <div class="metric-label">검색 정확도</div>
+        </div>
+      </article>
+
+      <article class="proj">
+        <div>
+          <div class="proj-head">
+            <h3><a href="projects/ocr.html">OCR 파이프라인</a></h3>
+            <span class="status">운영중</span>
+          </div>
+          <p class="desc">MCP의 텍스트 전용 제약을 우회해 base64 오버헤드를 0으로 만든 VLM OCR 파이프라인. 5종 클라이언트 지원, 할루시네이션 자동 감지 &middot; 재시도</p>
+          <ul class="chips"><li>PaddleOCR</li><li>vLLM</li><li>MCP</li><li>FastAPI</li><li>DGX</li></ul>
+          <a class="more" href="projects/ocr.html">자세히 보기</a>
+        </div>
+        <div class="proj-metric">
+          <div class="metric-num">0%</div>
+          <div class="metric-label">base64 오버헤드</div>
+        </div>
+      </article>
+
+      <article class="proj">
+        <div>
+          <div class="proj-head">
+            <h3><a href="projects/gitops.html">GitOps CI/CD Pipeline</a></h3>
+            <span class="status">운영중</span>
+          </div>
+          <p class="desc">git push 한 번으로 빌드 &rarr; 이미지 &rarr; K8s 배포까지 약 3분. 수동 배포 0건의 선언적 GitOps 파이프라인 (Frontend &middot; Backend 공통)</p>
+          <ul class="chips"><li>Jenkins</li><li>ArgoCD</li><li>GitLab</li><li>K3s</li><li>Kustomize</li></ul>
+          <a class="more" href="projects/gitops.html">자세히 보기</a>
+        </div>
+        <div class="proj-metric">
+          <div class="metric-num">약 3분</div>
+          <div class="metric-label">push &rarr; 배포</div>
+        </div>
+      </article>
+
+      <article class="proj">
+        <div>
+          <div class="proj-head">
+            <h3><a href="projects/device-farm.html">Device Farm 동시 테스트</a></h3>
+            <span class="status">운영중</span>
+          </div>
+          <p class="desc">실물 단말 8대(iOS+Android)를 git push 한 번으로 동시 E2E 검증. 네트워크 격리 환경을 Agent Pull 모델로 우회</p>
+          <ul class="chips"><li>GADS</li><li>Patrol</li><li>Jenkins</li><li>Flutter</li><li>Mac mini</li></ul>
+          <a class="more" href="projects/device-farm.html">자세히 보기</a>
+        </div>
+        <div class="proj-metric">
+          <div class="metric-num">8대</div>
+          <div class="metric-label">실물 단말 동시 검증</div>
+        </div>
+      </article>
+
+      <article class="proj">
+        <div>
+          <div class="proj-head">
+            <h3><a href="projects/pingpong.html">실물 모바일 테스트 자동화</a></h3>
+            <span class="status">운영중</span>
+          </div>
+          <p class="desc">모바일 앱과 관리자 웹을 브리지 서버로 연결해, 가입 &rarr; 승인 같은 실제 운영 플로우를 양방향 E2E로 자동 검증</p>
+          <ul class="chips"><li>Patrol</li><li>Playwright</li><li>Node</li><li>Trace Viewer</li></ul>
+          <a class="more" href="projects/pingpong.html">자세히 보기</a>
+        </div>
+      </article>
+    </section>
+
+    <!-- ===== 기술 스택 ===== -->
+    <section class="sec" id="tech">
+      <h2>기술 스택</h2>
+      <dl class="stack">
+        <dt>Backend</dt>
+        <dd>Java, Spring Boot, MyBatis, Python, FastAPI, Express.js, Celery</dd>
+        <dt>AI Serving</dt>
+        <dd>vLLM, SGLang, TensorRT, Ollama, ComfyUI, Nvidia DGX</dd>
+        <dt>Models</dt>
+        <dd>Qwen3-235B, EXAONE-4.0, HyperCLOVA X, GPT-OSS, PaddleOCR-VL, Granite, FLUX, Z-Image</dd>
+        <dt>RAG &middot; GraphRAG</dt>
+        <dd>Weaviate, Hybrid Search, 5-Phase 청킹, CCH, Neo4j, TypeDB, LangChain</dd>
+        <dt>Infra &middot; Cloud</dt>
+        <dd>Kubernetes(K3s), Docker, AWS, Nginx, Apache, Tomcat</dd>
+        <dt>Data</dt>
+        <dd>PostgreSQL, Oracle, MySQL, Redis, RabbitMQ</dd>
+        <dt>DevOps &middot; Observability</dt>
+        <dd>Jenkins, ArgoCD, Kustomize, GitLab, Nexus, Prometheus, Grafana</dd>
+        <dt>AI Tooling &middot; Automation</dt>
+        <dd>MCP Server, Claude Code, Gemini CLI, Google ADK, N8N, Hoppscotch</dd>
+      </dl>
+    </section>
+
+    <!-- ===== 자격증 ===== -->
+    <section class="sec" id="certs">
+      <h2>자격증</h2>
+      <div class="table-wrap">
+        <table class="certs">
+          <thead>
+            <tr><th scope="col">자격명</th><th scope="col">발급기관</th><th scope="col">취득일</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>정보처리기사</td><td>한국산업인력공단</td><td class="mono">2025.11</td></tr>
+            <tr><td>컴퓨터활용능력 1급</td><td>대한상공회의소</td><td class="mono">2019.06</td></tr>
+            <tr><td>워드프로세서 1급</td><td>대한상공회의소</td><td class="mono">2012.06</td></tr>
+          </tbody>
+        </table>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ===== Tech Stack Section ===== -->
-  <section class="section" id="tech">
-    <div class="container">
-      <div class="section-label reveal">Skills</div>
-      <h2 class="section-title reveal">Tech Stack</h2>
+    <!-- ===== 교육 과정 프로젝트 ===== -->
+    <section class="sec" id="past-projects">
+      <h2>교육 과정 프로젝트</h2>
+      <p class="sec-intro">백엔드 전향 초기, Java 기반 개발 교육 과정(2021)에서 진행한 팀 프로젝트입니다. 본인 담당 파트만 발췌했습니다.</p>
 
-      <div class="tech-grid">
-        <!-- Backend -->
-        <div class="tech-card reveal">
-          <div class="tech-card-header"><span class="dot"></span>Backend</div>
-          <div class="tech-pills">
-            <span class="tech-pill">Java</span>
-            <span class="tech-pill">Spring Boot</span>
-            <span class="tech-pill">MyBatis</span>
-            <span class="tech-pill">Python</span>
-            <span class="tech-pill">FastAPI</span>
-            <span class="tech-pill">Express.js</span>
-            <span class="tech-pill">Celery</span>
-          </div>
+      <article class="entry">
+        <p class="entry-meta">Semi Project &middot; 2021</p>
+        <div>
+          <h3><a href="projects/babmokja.pdf" target="_blank" rel="noopener">babmokja</a><span class="file">PDF</span></h3>
+          <p class="desc">강남권 식당 배달/픽업/예약 플랫폼의 <strong>업체 기능 전체</strong> 담당</p>
+          <ul class="items">
+            <li>회원가입 &mdash; Encrypt 래퍼, Multipart Form, PK/FK 순서 처리</li>
+            <li>비밀번호 유효성 검증 &amp; 중복 체크</li>
+            <li>페이징 처리 (공통부분 클래스화)</li>
+            <li>메뉴리스트 관리 (Multipart Form)</li>
+          </ul>
+          <ul class="chips"><li>Java</li><li>JSP/Servlet</li><li>Oracle</li><li>MyBatis</li></ul>
         </div>
+      </article>
 
-        <!-- AI Serving -->
-        <div class="tech-card reveal reveal-delay-1">
-          <div class="tech-card-header"><span class="dot"></span>AI Serving</div>
-          <div class="tech-pills">
-            <span class="tech-pill">vLLM</span>
-            <span class="tech-pill">SGLang</span>
-            <span class="tech-pill">TensorRT</span>
-            <span class="tech-pill">Ollama</span>
-            <span class="tech-pill">ComfyUI</span>
-            <span class="tech-pill">Nvidia DGX</span>
-          </div>
+      <article class="entry">
+        <p class="entry-meta">Final Project &middot; 2021</p>
+        <div>
+          <h3><a href="projects/tripweb.pdf" target="_blank" rel="noopener">TripfulAxel</a><span class="file">PDF</span></h3>
+          <p class="desc">제주도 여행 플랜 공유 플랫폼의 <strong>이용자 마이페이지 전체</strong> 담당</p>
+          <ul class="items">
+            <li>여행 신청내역 관리 (상태별 진행상태 분기)</li>
+            <li>이용자 후기 &amp; 리뷰 관리</li>
+            <li>회원정보 수정</li>
+            <li>신고 및 문의 관리</li>
+          </ul>
+          <ul class="chips"><li>Spring</li><li>MyBatis</li><li>Oracle</li><li>Ajax</li></ul>
         </div>
+      </article>
+    </section>
 
-        <!-- Models -->
-        <div class="tech-card reveal reveal-delay-2">
-          <div class="tech-card-header"><span class="dot"></span>Models</div>
-          <div class="tech-pills">
-            <span class="tech-pill">Qwen3-235B</span>
-            <span class="tech-pill">EXAONE-4.0</span>
-            <span class="tech-pill">HyperCLOVA X</span>
-            <span class="tech-pill">GPT-OSS</span>
-            <span class="tech-pill">PaddleOCR-VL</span>
-            <span class="tech-pill">Granite</span>
-            <span class="tech-pill">FLUX</span>
-            <span class="tech-pill">Z-Image</span>
-          </div>
-        </div>
+    <footer class="site-foot">
+      <p>&copy; 2026 AX Developer Portfolio</p>
+    </footer>
+  </main>
+</div>
 
-        <!-- RAG -->
-        <div class="tech-card reveal reveal-delay-3">
-          <div class="tech-card-header"><span class="dot"></span>RAG &middot; GraphRAG</div>
-          <div class="tech-pills">
-            <span class="tech-pill">Weaviate</span>
-            <span class="tech-pill">Hybrid Search</span>
-            <span class="tech-pill">5-Phase 청킹</span>
-            <span class="tech-pill">CCH</span>
-            <span class="tech-pill">Neo4j</span>
-            <span class="tech-pill">TypeDB</span>
-            <span class="tech-pill">LangChain</span>
-          </div>
-        </div>
-
-        <!-- Infra -->
-        <div class="tech-card reveal">
-          <div class="tech-card-header"><span class="dot"></span>Infra &middot; Cloud</div>
-          <div class="tech-pills">
-            <span class="tech-pill">Kubernetes(K3s)</span>
-            <span class="tech-pill">Docker</span>
-            <span class="tech-pill">AWS</span>
-            <span class="tech-pill">Nginx</span>
-            <span class="tech-pill">Apache</span>
-            <span class="tech-pill">Tomcat</span>
-          </div>
-        </div>
-
-        <!-- Data -->
-        <div class="tech-card reveal reveal-delay-1">
-          <div class="tech-card-header"><span class="dot"></span>Data</div>
-          <div class="tech-pills">
-            <span class="tech-pill">PostgreSQL</span>
-            <span class="tech-pill">Oracle</span>
-            <span class="tech-pill">MySQL</span>
-            <span class="tech-pill">Redis</span>
-            <span class="tech-pill">RabbitMQ</span>
-          </div>
-        </div>
-
-        <!-- DevOps -->
-        <div class="tech-card reveal reveal-delay-2">
-          <div class="tech-card-header"><span class="dot"></span>DevOps &middot; Observability</div>
-          <div class="tech-pills">
-            <span class="tech-pill">Jenkins</span>
-            <span class="tech-pill">ArgoCD</span>
-            <span class="tech-pill">Kustomize</span>
-            <span class="tech-pill">GitLab</span>
-            <span class="tech-pill">Nexus</span>
-            <span class="tech-pill">Prometheus</span>
-            <span class="tech-pill">Grafana</span>
-          </div>
-        </div>
-
-        <!-- Automation -->
-        <div class="tech-card reveal reveal-delay-3">
-          <div class="tech-card-header"><span class="dot"></span>AI Tooling &middot; Automation</div>
-          <div class="tech-pills">
-            <span class="tech-pill">MCP Server</span>
-            <span class="tech-pill">Claude Code</span>
-            <span class="tech-pill">Gemini CLI</span>
-            <span class="tech-pill">Google ADK</span>
-            <span class="tech-pill">N8N</span>
-            <span class="tech-pill">Hoppscotch</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== Projects Section ===== -->
-  <section class="section" id="projects">
-    <div class="container">
-      <div class="section-label reveal">Work</div>
-      <h2 class="section-title reveal">Projects</h2>
-
-      <div class="projects-grid">
-        <!-- RAG Pipeline -->
-        <a href="projects/rag.html" class="project-card reveal">
-          <div class="project-card-top">
-            <span class="project-status">운영중</span>
-            <span class="project-type">시스템 구축</span>
-          </div>
-          <h3>RAG 파이프라인</h3>
-          <p>50명 규모 조직의 분산 문서를 통합 검색하는 RAG 시스템을 설계부터 운영까지 주도. GPU 임베딩 20배 가속, 검색 정확도 +27.9%, 3-Tier 권한 필터</p>
-          <div class="project-techs">
-            <span class="project-tech-pill">vLLM</span>
-            <span class="project-tech-pill">Weaviate</span>
-            <span class="project-tech-pill">FastAPI</span>
-            <span class="project-tech-pill">K8s</span>
-            <span class="project-tech-pill">Celery</span>
-            <span class="project-tech-pill">Keycloak</span>
-          </div>
-          <span class="project-link">
-            자세히 보기
-            <svg class="project-link-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </span>
-        </a>
-
-        <!-- OCR Pipeline -->
-        <a href="projects/ocr.html" class="project-card reveal reveal-delay-1">
-          <div class="project-card-top">
-            <span class="project-status">운영중</span>
-            <span class="project-type">파이프라인</span>
-          </div>
-          <h3>OCR 파이프라인</h3>
-          <p>MCP의 텍스트 전용 제약을 우회해 base64 오버헤드를 0으로 만든 VLM OCR 파이프라인. 5종 클라이언트 지원, 할루시네이션 자동 감지 &middot; 재시도</p>
-          <div class="project-techs">
-            <span class="project-tech-pill">PaddleOCR</span>
-            <span class="project-tech-pill">vLLM</span>
-            <span class="project-tech-pill">MCP</span>
-            <span class="project-tech-pill">FastAPI</span>
-            <span class="project-tech-pill">DGX</span>
-          </div>
-          <span class="project-link">
-            자세히 보기
-            <svg class="project-link-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </span>
-        </a>
-
-        <!-- GitOps CI/CD -->
-        <a href="projects/gitops.html" class="project-card reveal reveal-delay-2">
-          <div class="project-card-top">
-            <span class="project-status">운영중</span>
-            <span class="project-type">자동화</span>
-          </div>
-          <h3>GitOps CI/CD Pipeline</h3>
-          <p>git push 한 번으로 빌드 &rarr; 이미지 &rarr; K8s 배포까지 약 3분. 수동 배포 0건의 선언적 GitOps 파이프라인 (Frontend &middot; Backend 공통)</p>
-          <div class="project-techs">
-            <span class="project-tech-pill">Jenkins</span>
-            <span class="project-tech-pill">ArgoCD</span>
-            <span class="project-tech-pill">GitLab</span>
-            <span class="project-tech-pill">K3s</span>
-            <span class="project-tech-pill">Kustomize</span>
-          </div>
-          <span class="project-link">
-            자세히 보기
-            <svg class="project-link-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </span>
-        </a>
-
-        <!-- Device Farm 동시 테스트 -->
-        <a href="projects/device-farm.html" class="project-card reveal reveal-delay-3">
-          <div class="project-card-top">
-            <span class="project-status">운영중</span>
-            <span class="project-type">테스트 자동화</span>
-          </div>
-          <h3>Device Farm 동시 테스트</h3>
-          <p>실물 단말 8대(iOS+Android)를 git push 한 번으로 동시 E2E 검증. 네트워크 격리 환경을 Agent Pull 모델로 우회</p>
-          <div class="project-techs">
-            <span class="project-tech-pill">GADS</span>
-            <span class="project-tech-pill">Patrol</span>
-            <span class="project-tech-pill">Jenkins</span>
-            <span class="project-tech-pill">Flutter</span>
-            <span class="project-tech-pill">Mac mini</span>
-          </div>
-          <span class="project-link">
-            자세히 보기
-            <svg class="project-link-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </span>
-        </a>
-
-        <!-- 실물 모바일 테스트 자동화 -->
-        <a href="projects/pingpong.html" class="project-card reveal reveal-delay-4">
-          <div class="project-card-top">
-            <span class="project-status">운영중</span>
-            <span class="project-type">E2E 테스트</span>
-          </div>
-          <h3>실물 모바일 테스트 자동화</h3>
-          <p>모바일 앱과 관리자 웹을 브리지 서버로 연결해, 가입 &rarr; 승인 같은 실제 운영 플로우를 양방향 E2E로 자동 검증</p>
-          <div class="project-techs">
-            <span class="project-tech-pill">Patrol</span>
-            <span class="project-tech-pill">Playwright</span>
-            <span class="project-tech-pill">Node</span>
-            <span class="project-tech-pill">Trace Viewer</span>
-          </div>
-          <span class="project-link">
-            자세히 보기
-            <svg class="project-link-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </span>
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== Certifications Section ===== -->
-  <section class="section" id="certs">
-    <div class="container">
-      <div class="section-label reveal">Credentials</div>
-      <h2 class="section-title reveal">Certifications</h2>
-
-      <div class="cert-grid">
-        <div class="cert-card reveal">
-          <div class="cert-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 15L8.5 21L10 17H7L12 9L16.5 21L14 17H17L12 15Z" fill="var(--accent-blue)" opacity="0.8"/>
-              <circle cx="12" cy="8" r="6" stroke="var(--accent-blue)" stroke-width="1.5" fill="none"/>
-            </svg>
-          </div>
-          <div class="cert-info">
-            <div class="cert-name">정보처리기사</div>
-            <div class="cert-meta">한국산업인력공단 &middot; <span>2025.11</span></div>
-          </div>
-        </div>
-
-        <div class="cert-card reveal reveal-delay-1">
-          <div class="cert-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="3" y="4" width="18" height="14" rx="2" stroke="var(--accent-cyan)" stroke-width="1.5" fill="none"/>
-              <path d="M7 20H17" stroke="var(--accent-cyan)" stroke-width="1.5" stroke-linecap="round"/>
-              <path d="M12 18V20" stroke="var(--accent-cyan)" stroke-width="1.5"/>
-            </svg>
-          </div>
-          <div class="cert-info">
-            <div class="cert-name">컴퓨터활용능력 1급</div>
-            <div class="cert-meta">대한상공회의소 &middot; <span>2019.06</span></div>
-          </div>
-        </div>
-
-        <div class="cert-card reveal reveal-delay-2">
-          <div class="cert-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M4 4H20V20H4V4Z" stroke="var(--accent-violet)" stroke-width="1.5" fill="none" rx="2"/>
-              <path d="M8 8H16M8 12H14M8 16H12" stroke="var(--accent-violet)" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <div class="cert-info">
-            <div class="cert-name">워드프로세서 1급</div>
-            <div class="cert-meta">대한상공회의소 &middot; <span>2012.06</span></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== Past Projects ===== -->
-  <section class="section" id="past-projects">
-    <div class="container">
-      <div class="section-label reveal">Past Projects</div>
-      <div class="section-title reveal">Education &amp; Training Projects</div>
-      <p style="color:var(--text-secondary);margin-bottom:40px;" class="reveal">백엔드 전향 초기, Java 기반 개발 교육 과정(2021)에서 진행한 팀 프로젝트입니다. 본인 담당 파트만 발췌했습니다.</p>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:24px;">
-
-        <!-- babmokja -->
-        <a href="projects/babmokja.pdf" target="_blank" style="text-decoration:none;" class="reveal">
-          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px;transition:all .3s ease;cursor:pointer;" onmouseover="this.style.borderColor='var(--accent-amber)';this.style.transform='translateY(-4px)';this.style.boxShadow='0 0 30px rgba(245,158,11,0.1)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform='translateY(0)';this.style.boxShadow='none'">
-            <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
-              <div style="width:44px;height:44px;border-radius:12px;background:rgba(245,158,11,0.15);display:flex;align-items:center;justify-content:center;font-size:1.3rem;">🍽</div>
-              <div>
-                <div style="font-weight:700;font-size:1.05rem;color:var(--text-primary);">babmokja</div>
-                <div style="font-size:.78rem;color:var(--text-muted);">Semi Project &middot; 2021</div>
-              </div>
-              <span style="margin-left:auto;font-size:.7rem;font-weight:600;padding:4px 10px;border-radius:12px;background:rgba(245,158,11,0.15);color:var(--accent-amber);">PDF</span>
-            </div>
-            <p style="font-size:.9rem;color:var(--text-secondary);margin-bottom:16px;line-height:1.7;">강남권 식당 배달/픽업/예약 플랫폼의 <strong style="color:var(--text-primary);">업체 기능 전체</strong> 담당</p>
-            <div style="font-size:.8rem;color:var(--text-secondary);line-height:1.8;">
-              <div>&#8226; 회원가입 &mdash; Encrypt 래퍼, Multipart Form, PK/FK 순서 처리</div>
-              <div>&#8226; 비밀번호 유효성 검증 &amp; 중복 체크</div>
-              <div>&#8226; 페이징 처리 (공통부분 클래스화)</div>
-              <div>&#8226; 메뉴리스트 관리 (Multipart Form)</div>
-            </div>
-            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:16px;">
-              <span style="font-size:.72rem;padding:3px 10px;border-radius:12px;background:var(--bg-secondary);border:1px solid var(--border);color:var(--text-muted);">Java</span>
-              <span style="font-size:.72rem;padding:3px 10px;border-radius:12px;background:var(--bg-secondary);border:1px solid var(--border);color:var(--text-muted);">JSP/Servlet</span>
-              <span style="font-size:.72rem;padding:3px 10px;border-radius:12px;background:var(--bg-secondary);border:1px solid var(--border);color:var(--text-muted);">Oracle</span>
-              <span style="font-size:.72rem;padding:3px 10px;border-radius:12px;background:var(--bg-secondary);border:1px solid var(--border);color:var(--text-muted);">MyBatis</span>
-            </div>
-          </div>
-        </a>
-
-        <!-- TripfulAxel -->
-        <a href="projects/tripweb.pdf" target="_blank" style="text-decoration:none;" class="reveal reveal-delay-1">
-          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px;transition:all .3s ease;cursor:pointer;" onmouseover="this.style.borderColor='var(--accent-cyan)';this.style.transform='translateY(-4px)';this.style.boxShadow='0 0 30px rgba(6,182,212,0.1)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform='translateY(0)';this.style.boxShadow='none'">
-            <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
-              <div style="width:44px;height:44px;border-radius:12px;background:rgba(6,182,212,0.15);display:flex;align-items:center;justify-content:center;font-size:1.3rem;">✈</div>
-              <div>
-                <div style="font-weight:700;font-size:1.05rem;color:var(--text-primary);">TripfulAxel</div>
-                <div style="font-size:.78rem;color:var(--text-muted);">Final Project &middot; 2021</div>
-              </div>
-              <span style="margin-left:auto;font-size:.7rem;font-weight:600;padding:4px 10px;border-radius:12px;background:rgba(6,182,212,0.15);color:var(--accent-cyan);">PDF</span>
-            </div>
-            <p style="font-size:.9rem;color:var(--text-secondary);margin-bottom:16px;line-height:1.7;">제주도 여행 플랜 공유 플랫폼의 <strong style="color:var(--text-primary);">이용자 마이페이지 전체</strong> 담당</p>
-            <div style="font-size:.8rem;color:var(--text-secondary);line-height:1.8;">
-              <div>&#8226; 여행 신청내역 관리 (상태별 진행상태 분기)</div>
-              <div>&#8226; 이용자 후기 &amp; 리뷰 관리</div>
-              <div>&#8226; 회원정보 수정</div>
-              <div>&#8226; 신고 및 문의 관리</div>
-            </div>
-            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:16px;">
-              <span style="font-size:.72rem;padding:3px 10px;border-radius:12px;background:var(--bg-secondary);border:1px solid var(--border);color:var(--text-muted);">Spring</span>
-              <span style="font-size:.72rem;padding:3px 10px;border-radius:12px;background:var(--bg-secondary);border:1px solid var(--border);color:var(--text-muted);">MyBatis</span>
-              <span style="font-size:.72rem;padding:3px 10px;border-radius:12px;background:var(--bg-secondary);border:1px solid var(--border);color:var(--text-muted);">Oracle</span>
-              <span style="font-size:.72rem;padding:3px 10px;border-radius:12px;background:var(--bg-secondary);border:1px solid var(--border);color:var(--text-muted);">Ajax</span>
-            </div>
-          </div>
-        </a>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== Footer ===== -->
-  <footer class="footer">
-    <p>&copy; 2026 AX Developer Portfolio</p>
-  </footer>
-
-  <!-- ===== Scroll Reveal Script ===== -->
-  <script>
-    // Mobile nav toggle
-    function toggleNav() {
-      document.getElementById('navLinks').classList.toggle('open');
-    }
-    function closeNav() {
-      document.getElementById('navLinks').classList.remove('open');
-    }
-
-    // IntersectionObserver for scroll reveal
-    document.addEventListener('DOMContentLoaded', function () {
-      const reveals = document.querySelectorAll('.reveal');
-
-      const observer = new IntersectionObserver(function (entries) {
-        entries.forEach(function (entry) {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
-            observer.unobserve(entry.target);
-          }
-        });
-      }, {
-        threshold: 0.1,
-        rootMargin: '0px 0px -40px 0px'
-      });
-
-      reveals.forEach(function (el) {
-        observer.observe(el);
+<script>
+  // 목차: 화면 위쪽에 들어온 섹션의 링크에 aria-current 를 표시한다(등장 애니메이션 아님)
+  const tocLinks = document.querySelectorAll('.toc a');
+  const tocObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      tocLinks.forEach((a) => {
+        if (a.getAttribute('href') === '#' + entry.target.id) a.setAttribute('aria-current', 'location');
+        else a.removeAttribute('aria-current');
       });
     });
-  </script>
+  }, { rootMargin: '0px 0px -65% 0px' });
+  tocLinks.forEach((a) => tocObserver.observe(document.querySelector(a.getAttribute('href'))));
+</script>
 </body>
 </html>

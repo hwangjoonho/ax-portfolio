@@ -1,0 +1,169 @@
+/* AX 포트폴리오 공통 스타일 — index.html 과 projects/*.html 이 함께 쓴다.
+   페이지 전용 컴포넌트는 각 페이지 <style> 에 두고, 색·글꼴·간격은 여기 토큰만 쓴다. */
+
+:root {
+  --paper: #F4F6F8;
+  --surface: #FFFFFF;
+  --ink: #15181E;
+  --ink-2: #464D5B;
+  --ink-3: #687082;
+  --rule: #D6DBE3;
+  --rule-strong: #AEB6C2;
+  --accent: #2443C9;
+  --accent-soft: #E9EDFB;
+  --live: #18794E;
+  --live-soft: #E3F3EA;
+  --warn: #A5520C;
+  --warn-soft: #FBEFE3;
+  --code-bg: #EDF0F4;
+
+  --font-sans: 'IBM Plex Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --fs-xs: 0.8125rem;   /* 13 */
+  --fs-sm: 0.9375rem;   /* 15 */
+  --fs-base: 1.0625rem; /* 17 */
+  --fs-md: 1.25rem;     /* 20 */
+  --fs-lg: 1.5625rem;   /* 25 */
+  --fs-xl: 2rem;        /* 32 */
+  --fs-2xl: 2.75rem;    /* 44 */
+
+  --radius: 6px;
+  --measure: 42rem;     /* 본문 문단 최대 폭 */
+  --page: 64rem;        /* 상세 페이지 최대 폭 */
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { -webkit-text-size-adjust: 100%; scroll-padding-top: 24px; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--fs-base);
+  line-height: 1.75;
+  color: var(--ink);
+  background: var(--paper);
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 { color: var(--ink); font-weight: 600; }
+h1 { font-size: var(--fs-2xl); line-height: 1.2; letter-spacing: -0.02em; }
+h2 { font-size: var(--fs-lg); line-height: 1.3; letter-spacing: -0.01em; }
+h3 { font-size: var(--fs-md); line-height: 1.4; }
+h4 { font-size: var(--fs-base); line-height: 1.5; }
+
+p + p { margin-top: 0.9em; }
+strong, b { font-weight: 600; color: var(--ink); }
+
+a { color: var(--accent); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+::selection { background: var(--accent-soft); }
+
+ul, ol { padding-left: 1.25em; }
+li + li { margin-top: 0.35em; }
+img { max-width: 100%; height: auto; }
+
+code, kbd, .mono { font-family: var(--font-mono); font-size: 0.9em; }
+:not(pre) > code { background: var(--code-bg); padding: 0.1em 0.35em; border-radius: 4px; }
+pre {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  line-height: 1.65;
+  background: var(--code-bg);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  overflow-x: auto;
+  word-break: normal;
+}
+pre code { font-size: inherit; }
+/* 코드 하이라이트 토큰 */
+.key { color: var(--accent); }
+.string { color: var(--live); }
+.comment { color: var(--ink-3); }
+.num { color: var(--warn); }
+
+table { border-collapse: collapse; width: 100%; font-size: var(--fs-sm); }
+th, td { text-align: left; vertical-align: top; padding: 10px 16px 10px 0; border-bottom: 1px solid var(--rule); }
+th { font-weight: 600; color: var(--ink); border-bottom-color: var(--ink); }
+.table-wrap { overflow-x: auto; }
+
+/* ===== 공통 소품 ===== */
+.muted { color: var(--ink-3); }
+.small { font-size: var(--fs-sm); }
+
+.status { display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-xs); font-weight: 500; color: var(--live); }
+.status::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--live); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; padding: 0; }
+.chips li, .chip {
+  margin: 0;
+  font-size: var(--fs-xs);
+  line-height: 1.5;
+  padding: 2px 8px;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+.metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr)); gap: 8px 24px; border-top: 1px solid var(--ink); }
+.metric { padding-top: 14px; }
+.metric-num { font-family: var(--font-mono); font-size: var(--fs-xl); line-height: 1.1; font-weight: 500; letter-spacing: -0.02em; color: var(--ink); }
+.metric-label { margin-top: 6px; font-size: var(--fs-sm); color: var(--ink-2); }
+.metric-note { font-size: var(--fs-xs); color: var(--ink-3); }
+
+.box { background: var(--surface); border: 1px solid var(--rule-strong); border-radius: var(--radius); padding: 10px 14px; }
+
+.note {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 14px 18px;
+  font-size: var(--fs-sm);
+  color: var(--ink-2);
+}
+
+/* ===== 상세 페이지 골격 ===== */
+.doc-top {
+  display: flex; justify-content: space-between; align-items: center; gap: 16px;
+  max-width: var(--page); margin: 0 auto; padding: 20px 24px;
+  font-size: var(--fs-sm);
+}
+.doc-top a { color: var(--ink-2); text-decoration: none; }
+.doc-top a:hover { color: var(--accent); text-decoration: underline; }
+
+.doc { max-width: var(--page); margin: 0 auto; padding: 0 24px 96px; }
+.doc-hero { padding: 40px 0 40px; border-bottom: 1px solid var(--rule); }
+.doc-hero .lede { margin-top: 16px; max-width: var(--measure); font-size: var(--fs-md); line-height: 1.6; color: var(--ink-2); }
+.doc-meta { display: flex; flex-wrap: wrap; gap: 6px 20px; margin-top: 20px; font-size: var(--fs-sm); color: var(--ink-3); }
+.doc-hero .metrics { margin-top: 32px; }
+.doc-hero .chips { margin-top: 24px; }
+
+.doc-sec { padding-top: 64px; }
+.doc-sec > h2 { margin-bottom: 20px; }
+.doc-sec .intro { max-width: var(--measure); margin-bottom: 24px; color: var(--ink-2); }
+.doc-sec h3 { margin: 32px 0 12px; }
+
+.site-foot {
+  display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px;
+  margin-top: 96px; padding: 24px 0; border-top: 1px solid var(--rule);
+  font-size: var(--fs-sm); color: var(--ink-3);
+}
+
+@media (max-width: 640px) {
+  h1 { font-size: var(--fs-xl); }
+  h2 { font-size: var(--fs-md); }
+  .doc-top, .doc { padding-left: 18px; padding-right: 18px; }
+  .doc-sec { padding-top: 48px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
