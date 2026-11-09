@@ -2,7 +2,7 @@
    페이지 전용 컴포넌트는 각 페이지 <style> 에 두고, 색·글꼴·간격은 여기 토큰만 쓴다. */
 
 :root {
-  --paper: #E8EEF7;
+  --paper: #F2F6FB;
   --surface: #FFFFFF;
   --ink: #15181E;
   --ink-2: #464D5B;
@@ -15,7 +15,7 @@
   --live-soft: #E3F3EA;
   --warn: #A5520C;
   --warn-soft: #FBEFE3;
-  --code-bg: #F4F7FB;
+  --code-bg: #FAFCFF;
 
   --font-sans: 'IBM Plex Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
