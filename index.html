@@ -51,8 +51,6 @@
     .hero .chips { margin-top: 20px; }
 
     /* ===== 시스템 구성도 ===== */
-    .arch-fig { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--rule); }
-    .arch-fig h2 { font-size: var(--fs-md); }
     .arch-wrap { margin-top: 20px; overflow-x: auto; }
     .arch { display: block; width: 100%; height: auto; }
     .arch text { font-family: var(--font-sans); font-size: 15px; fill: var(--ink); text-anchor: middle; dominant-baseline: central; }
@@ -71,14 +69,6 @@
     .arch a:focus-visible .f { stroke-width: 2.5; }
     .arch .sep { fill: none; stroke: var(--rule); }
     .arch .w { fill: none; stroke: var(--accent); stroke-width: 1.5; stroke-linejoin: round; pointer-events: none; }
-    @media (prefers-reduced-motion: no-preference) {
-      /* 페이지 로드 시 연결선만 한 번 그린다 (열 순서대로 지연, 전체 약 1.2초) */
-      .arch .w { stroke-dasharray: 1; stroke-dashoffset: 1; animation: wire 0.45s ease-out forwards; }
-      .arch .w2 { animation-delay: 0.25s; }
-      .arch .w3 { animation-delay: 0.5s; }
-      .arch .w4 { animation-delay: 0.75s; }
-    }
-    @keyframes wire { to { stroke-dashoffset: 0; } }
     /* ponytail: 축소 시 SVG 글자 12px 이상 유지 — 760px 미만 폭에서는 래퍼가 가로 스크롤 */
     .arch { min-width: 760px; }
 
@@ -146,9 +136,10 @@
       <ul>
         <li><a href="#about">소개</a></li>
         <li><a href="#career">경력</a></li>
-        <li><a href="#projects">프로젝트</a></li>
         <li><a href="#tech">기술 스택</a></li>
         <li><a href="#certs">자격증</a></li>
+        <li><a href="#projects">프로젝트</a></li>
+        <li><a href="#platform">AI 플랫폼</a></li>
         <li><a href="#past-projects">교육 과정 프로젝트</a></li>
       </ul>
     </nav>
@@ -173,115 +164,6 @@
         <li>Kubernetes</li>
         <li>ArgoCD</li>
       </ul>
-
-      <div class="arch-fig">
-        <h2>지금 운영 중인 사내 AI 플랫폼</h2>
-        <p class="muted small">상자를 누르면 해당 프로젝트로 이동합니다.</p>
-        <div class="arch-wrap">
-          <svg class="arch" viewBox="-4 -2 888 444" role="group" aria-labelledby="arch-t arch-d">
-            <title id="arch-t">사내 AI 플랫폼 구성도</title>
-            <desc id="arch-d">NVIDIA DGX Spark 2대(QSFP 연동)에서 vLLM, SGLang, TensorRT, Ollama, ComfyUI로 모델을 서빙하고, RAG(Weaviate Hybrid Search), GraphRAG(Neo4j, TypeDB), OCR(PaddleOCR-VL), 이미지 생성(FLUX, Z-Image) 서비스를 MCP Server를 거쳐 Claude Code, Gemini CLI, 사내 서비스(Keycloak SSO)에 제공합니다. 전체는 K3s 클러스터에서 GitLab, Jenkins, Nexus, ArgoCD GitOps 흐름으로 배포되고 Prometheus, Grafana로 모니터링하며, Jenkins는 Device Farm(Mac mini, 실물 단말 8대)과 실물 모바일 E2E로 이어집니다.</desc>
-
-            <!-- 열 머리 -->
-            <g class="h">
-              <text x="0" y="14">하드웨어</text>
-              <text x="190" y="14">서빙</text>
-              <text x="350" y="14">서비스</text>
-              <text x="590" y="14">접점</text>
-            </g>
-
-            <!-- 1열: 하드웨어 -->
-            <rect x="0" y="118" width="160" height="90" rx="6"/>
-            <text class="t" x="80" y="144">NVIDIA DGX Spark</text>
-            <text class="e mo" x="80" y="166">×2</text>
-            <text class="s" x="80" y="188">QSFP 연동</text>
-
-            <!-- 2열: 서빙 -->
-            <rect x="190" y="36" width="130" height="254" rx="6"/>
-            <path class="sep" d="M206 103 H304 M206 143 H304 M206 183 H304 M206 223 H304"/>
-            <text class="e" x="255" y="83">vLLM</text>
-            <text class="e" x="255" y="123">SGLang</text>
-            <text class="e" x="255" y="163">TensorRT</text>
-            <text class="e" x="255" y="203">Ollama</text>
-            <text class="e" x="255" y="243">ComfyUI</text>
-
-            <!-- 3열: 서비스 -->
-            <a href="projects/rag.html">
-              <rect class="f" x="350" y="36" width="210" height="56" rx="6"/>
-              <text class="t" x="455" y="55">RAG</text>
-              <text class="s" x="455" y="75">Weaviate Hybrid Search</text>
-            </a>
-            <rect x="350" y="102" width="210" height="56" rx="6"/>
-            <text class="t" x="455" y="121">GraphRAG</text>
-            <text class="s" x="455" y="141">Neo4j · TypeDB</text>
-            <a href="projects/ocr.html">
-              <rect class="f" x="350" y="168" width="210" height="56" rx="6"/>
-              <text class="t" x="455" y="187">OCR</text>
-              <text class="s" x="455" y="207">PaddleOCR-VL</text>
-            </a>
-            <rect x="350" y="234" width="210" height="56" rx="6"/>
-            <text class="t" x="455" y="253">이미지 생성</text>
-            <text class="s" x="455" y="273">FLUX · Z-Image</text>
-
-            <!-- 4열: 접점 -->
-            <rect x="590" y="133" width="110" height="60" rx="6"/>
-            <text class="t" x="645" y="163">MCP Server</text>
-            <rect x="730" y="71" width="150" height="52" rx="6"/>
-            <text class="e" x="805" y="97">Claude Code</text>
-            <rect x="730" y="137" width="150" height="52" rx="6"/>
-            <text class="e" x="805" y="163">Gemini CLI</text>
-            <rect x="730" y="203" width="150" height="52" rx="6"/>
-            <text class="e" x="805" y="220">사내 서비스</text>
-            <text class="s" x="805" y="240">Keycloak SSO</text>
-
-            <!-- 하단 띠: K3s 클러스터 · GitOps -->
-            <a href="projects/gitops.html">
-              <rect class="f" x="0" y="318" width="624" height="118" rx="6"/>
-              <text class="t lt" x="16" y="340">K3s 클러스터 · GitOps</text>
-              <rect x="16" y="358" width="82" height="36" rx="4"/>
-              <text class="e2" x="57" y="376">GitLab</text>
-              <rect x="120" y="358" width="82" height="36" rx="4"/>
-              <text class="e2" x="161" y="376">Jenkins</text>
-              <rect x="224" y="358" width="82" height="36" rx="4"/>
-              <text class="e2" x="265" y="376">Nexus</text>
-              <rect x="328" y="358" width="82" height="36" rx="4"/>
-              <text class="e2" x="369" y="376">ArgoCD</text>
-              <rect x="432" y="358" width="176" height="36" rx="4"/>
-              <text class="e2" x="520" y="376">Prometheus · Grafana</text>
-            </a>
-
-            <!-- 하단 오른쪽: 실물 단말 테스트 -->
-            <a href="projects/device-farm.html">
-              <rect class="f" x="652" y="318" width="228" height="52" rx="6"/>
-              <text class="t" x="766" y="336">Device Farm</text>
-              <text class="s" x="766" y="355">Mac mini · 실물 단말 <tspan class="mo">8</tspan>대</text>
-            </a>
-            <a href="projects/pingpong.html">
-              <rect class="f" x="652" y="384" width="228" height="52" rx="6"/>
-              <text class="t" x="766" y="410">실물 모바일 E2E</text>
-            </a>
-
-            <!-- 연결선 (선 끝 화살촉까지 한 경로로 이어 그려 대시 애니메이션이 끝에서 화살촉을 그린다) -->
-            <path class="w w1" pathLength="1" d="M160 163 H189 l-6 -4 l6 4 l-6 4"/>
-            <path class="w w2" pathLength="1" d="M320 163 H335 V64 H349 l-6 -4 l6 4 l-6 4"/>
-            <path class="w w2" pathLength="1" d="M320 163 H335 V130 H349 l-6 -4 l6 4 l-6 4"/>
-            <path class="w w2" pathLength="1" d="M320 163 H335 V196 H349 l-6 -4 l6 4 l-6 4"/>
-            <path class="w w2" pathLength="1" d="M320 163 H335 V262 H349 l-6 -4 l6 4 l-6 4"/>
-            <path class="w w3" pathLength="1" d="M560 64 H575 V163 H589 l-6 -4 l6 4 l-6 4"/>
-            <path class="w w3" pathLength="1" d="M560 130 H575 V163 H589 l-6 -4 l6 4 l-6 4"/>
-            <path class="w w3" pathLength="1" d="M560 196 H575 V163 H589 l-6 -4 l6 4 l-6 4"/>
-            <path class="w w3" pathLength="1" d="M560 262 H575 V163 H589 l-6 -4 l6 4 l-6 4"/>
-            <path class="w w4" pathLength="1" d="M700 163 H715 V97 H729 l-6 -4 l6 4 l-6 4"/>
-            <path class="w w4" pathLength="1" d="M700 163 H729 l-6 -4 l6 4 l-6 4"/>
-            <path class="w w4" pathLength="1" d="M700 163 H715 V229 H729 l-6 -4 l6 4 l-6 4"/>
-            <path class="w w2" pathLength="1" d="M98 376 H119 l-6 -4 l6 4 l-6 4"/>
-            <path class="w w3" pathLength="1" d="M202 376 H223 l-6 -4 l6 4 l-6 4"/>
-            <path class="w w4" pathLength="1" d="M306 376 H327 l-6 -4 l6 4 l-6 4"/>
-            <path class="w w4" pathLength="1" d="M161 394 V420 H636 V344 H651 l-6 -4 l6 4 l-6 4"/>
-            <path class="w w4" pathLength="1" d="M161 394 V420 H636 V410 H651 l-6 -4 l6 4 l-6 4"/>
-          </svg>
-        </div>
-      </div>
     </section>
 
     <!-- ===== 소개 ===== -->
@@ -400,6 +282,46 @@
       </article>
     </section>
 
+    <!-- ===== 기술 스택 ===== -->
+    <section class="sec" id="tech">
+      <h2>기술 스택</h2>
+      <dl class="stack">
+        <dt>Backend</dt>
+        <dd>Java, Spring Boot, MyBatis, Python, FastAPI, Express.js, Celery</dd>
+        <dt>AI Serving</dt>
+        <dd>vLLM, SGLang, TensorRT, Ollama, ComfyUI, Nvidia DGX</dd>
+        <dt>Models</dt>
+        <dd>Qwen3-235B, EXAONE-4.0, HyperCLOVA X, GPT-OSS, PaddleOCR-VL, Granite, FLUX, Z-Image</dd>
+        <dt>RAG &middot; GraphRAG</dt>
+        <dd>Weaviate, Hybrid Search, 5-Phase 청킹, CCH, Neo4j, TypeDB, LangChain</dd>
+        <dt>Infra &middot; Cloud</dt>
+        <dd>Kubernetes(K3s), Docker, AWS, Nginx, Apache, Tomcat</dd>
+        <dt>Data</dt>
+        <dd>PostgreSQL, Oracle, MySQL, Redis, RabbitMQ</dd>
+        <dt>DevOps &middot; Observability</dt>
+        <dd>Jenkins, ArgoCD, Kustomize, GitLab, Nexus, Prometheus, Grafana</dd>
+        <dt>AI Tooling &middot; Automation</dt>
+        <dd>MCP Server, Claude Code, Gemini CLI, Google ADK, N8N, Hoppscotch</dd>
+      </dl>
+    </section>
+
+    <!-- ===== 자격증 ===== -->
+    <section class="sec" id="certs">
+      <h2>자격증</h2>
+      <div class="table-wrap">
+        <table class="certs">
+          <thead>
+            <tr><th scope="col">자격명</th><th scope="col">발급기관</th><th scope="col">취득일</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>정보처리기사</td><td>한국산업인력공단</td><td class="mono">2025.11</td></tr>
+            <tr><td>컴퓨터활용능력 1급</td><td>대한상공회의소</td><td class="mono">2019.06</td></tr>
+            <tr><td>워드프로세서 1급</td><td>대한상공회의소</td><td class="mono">2012.06</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
     <!-- ===== 프로젝트 ===== -->
     <section class="sec" id="projects">
       <h2>프로젝트</h2>
@@ -481,43 +403,113 @@
       </article>
     </section>
 
-    <!-- ===== 기술 스택 ===== -->
-    <section class="sec" id="tech">
-      <h2>기술 스택</h2>
-      <dl class="stack">
-        <dt>Backend</dt>
-        <dd>Java, Spring Boot, MyBatis, Python, FastAPI, Express.js, Celery</dd>
-        <dt>AI Serving</dt>
-        <dd>vLLM, SGLang, TensorRT, Ollama, ComfyUI, Nvidia DGX</dd>
-        <dt>Models</dt>
-        <dd>Qwen3-235B, EXAONE-4.0, HyperCLOVA X, GPT-OSS, PaddleOCR-VL, Granite, FLUX, Z-Image</dd>
-        <dt>RAG &middot; GraphRAG</dt>
-        <dd>Weaviate, Hybrid Search, 5-Phase 청킹, CCH, Neo4j, TypeDB, LangChain</dd>
-        <dt>Infra &middot; Cloud</dt>
-        <dd>Kubernetes(K3s), Docker, AWS, Nginx, Apache, Tomcat</dd>
-        <dt>Data</dt>
-        <dd>PostgreSQL, Oracle, MySQL, Redis, RabbitMQ</dd>
-        <dt>DevOps &middot; Observability</dt>
-        <dd>Jenkins, ArgoCD, Kustomize, GitLab, Nexus, Prometheus, Grafana</dd>
-        <dt>AI Tooling &middot; Automation</dt>
-        <dd>MCP Server, Claude Code, Gemini CLI, Google ADK, N8N, Hoppscotch</dd>
-      </dl>
-    </section>
+    <!-- ===== 운영 중인 AI 플랫폼 ===== -->
+    <section class="sec" id="platform">
+      <h2>지금 운영 중인 사내 AI 플랫폼</h2>
+      <p class="sec-intro">상자를 누르면 해당 프로젝트로 이동합니다.</p>
+      <div class="arch-wrap">
+        <svg class="arch" viewBox="-4 -2 888 444" role="group" aria-labelledby="arch-t arch-d">
+          <title id="arch-t">사내 AI 플랫폼 구성도</title>
+          <desc id="arch-d">NVIDIA DGX Spark 2대(QSFP 연동)에서 vLLM, SGLang, TensorRT, Ollama, ComfyUI로 모델을 서빙하고, RAG(Weaviate Hybrid Search), GraphRAG(Neo4j, TypeDB), OCR(PaddleOCR-VL), 이미지 생성(FLUX, Z-Image) 서비스를 MCP Server를 거쳐 Claude Code, Gemini CLI, 사내 서비스(Keycloak SSO)에 제공합니다. 전체는 K3s 클러스터에서 GitLab, Jenkins, Nexus, ArgoCD GitOps 흐름으로 배포되고 Prometheus, Grafana로 모니터링하며, Jenkins는 Device Farm(Mac mini, 실물 단말 8대)과 실물 모바일 E2E로 이어집니다.</desc>
 
-    <!-- ===== 자격증 ===== -->
-    <section class="sec" id="certs">
-      <h2>자격증</h2>
-      <div class="table-wrap">
-        <table class="certs">
-          <thead>
-            <tr><th scope="col">자격명</th><th scope="col">발급기관</th><th scope="col">취득일</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>정보처리기사</td><td>한국산업인력공단</td><td class="mono">2025.11</td></tr>
-            <tr><td>컴퓨터활용능력 1급</td><td>대한상공회의소</td><td class="mono">2019.06</td></tr>
-            <tr><td>워드프로세서 1급</td><td>대한상공회의소</td><td class="mono">2012.06</td></tr>
-          </tbody>
-        </table>
+          <!-- 열 머리 -->
+          <g class="h">
+            <text x="0" y="14">하드웨어</text>
+            <text x="190" y="14">서빙</text>
+            <text x="350" y="14">서비스</text>
+            <text x="590" y="14">접점</text>
+          </g>
+
+          <!-- 1열: 하드웨어 -->
+          <rect x="0" y="118" width="160" height="90" rx="6"/>
+          <text class="t" x="80" y="144">NVIDIA DGX Spark</text>
+          <text class="e mo" x="80" y="166">×2</text>
+          <text class="s" x="80" y="188">QSFP 연동</text>
+
+          <!-- 2열: 서빙 -->
+          <rect x="190" y="36" width="130" height="254" rx="6"/>
+          <path class="sep" d="M206 103 H304 M206 143 H304 M206 183 H304 M206 223 H304"/>
+          <text class="e" x="255" y="83">vLLM</text>
+          <text class="e" x="255" y="123">SGLang</text>
+          <text class="e" x="255" y="163">TensorRT</text>
+          <text class="e" x="255" y="203">Ollama</text>
+          <text class="e" x="255" y="243">ComfyUI</text>
+
+          <!-- 3열: 서비스 -->
+          <a href="projects/rag.html">
+            <rect class="f" x="350" y="36" width="210" height="56" rx="6"/>
+            <text class="t" x="455" y="55">RAG</text>
+            <text class="s" x="455" y="75">Weaviate Hybrid Search</text>
+          </a>
+          <rect x="350" y="102" width="210" height="56" rx="6"/>
+          <text class="t" x="455" y="121">GraphRAG</text>
+          <text class="s" x="455" y="141">Neo4j · TypeDB</text>
+          <a href="projects/ocr.html">
+            <rect class="f" x="350" y="168" width="210" height="56" rx="6"/>
+            <text class="t" x="455" y="187">OCR</text>
+            <text class="s" x="455" y="207">PaddleOCR-VL</text>
+          </a>
+          <rect x="350" y="234" width="210" height="56" rx="6"/>
+          <text class="t" x="455" y="253">이미지 생성</text>
+          <text class="s" x="455" y="273">FLUX · Z-Image</text>
+
+          <!-- 4열: 접점 -->
+          <rect x="590" y="133" width="110" height="60" rx="6"/>
+          <text class="t" x="645" y="163">MCP Server</text>
+          <rect x="730" y="71" width="150" height="52" rx="6"/>
+          <text class="e" x="805" y="97">Claude Code</text>
+          <rect x="730" y="137" width="150" height="52" rx="6"/>
+          <text class="e" x="805" y="163">Gemini CLI</text>
+          <rect x="730" y="203" width="150" height="52" rx="6"/>
+          <text class="e" x="805" y="220">사내 서비스</text>
+          <text class="s" x="805" y="240">Keycloak SSO</text>
+
+          <!-- 하단 띠: K3s 클러스터 · GitOps -->
+          <a href="projects/gitops.html">
+            <rect class="f" x="0" y="318" width="624" height="118" rx="6"/>
+            <text class="t lt" x="16" y="340">K3s 클러스터 · GitOps</text>
+            <rect x="16" y="358" width="82" height="36" rx="4"/>
+            <text class="e2" x="57" y="376">GitLab</text>
+            <rect x="120" y="358" width="82" height="36" rx="4"/>
+            <text class="e2" x="161" y="376">Jenkins</text>
+            <rect x="224" y="358" width="82" height="36" rx="4"/>
+            <text class="e2" x="265" y="376">Nexus</text>
+            <rect x="328" y="358" width="82" height="36" rx="4"/>
+            <text class="e2" x="369" y="376">ArgoCD</text>
+            <rect x="432" y="358" width="176" height="36" rx="4"/>
+            <text class="e2" x="520" y="376">Prometheus · Grafana</text>
+          </a>
+
+          <!-- 하단 오른쪽: 실물 단말 테스트 -->
+          <a href="projects/device-farm.html">
+            <rect class="f" x="652" y="318" width="228" height="52" rx="6"/>
+            <text class="t" x="766" y="336">Device Farm</text>
+            <text class="s" x="766" y="355">Mac mini · 실물 단말 <tspan class="mo">8</tspan>대</text>
+          </a>
+          <a href="projects/pingpong.html">
+            <rect class="f" x="652" y="384" width="228" height="52" rx="6"/>
+            <text class="t" x="766" y="410">실물 모바일 E2E</text>
+          </a>
+
+          <!-- 연결선 (선 끝 화살촉까지 한 경로로 이어 그려 대시 애니메이션이 끝에서 화살촉을 그린다) -->
+          <path class="w w1" pathLength="1" d="M160 163 H189 l-6 -4 l6 4 l-6 4"/>
+          <path class="w w2" pathLength="1" d="M320 163 H335 V64 H349 l-6 -4 l6 4 l-6 4"/>
+          <path class="w w2" pathLength="1" d="M320 163 H335 V130 H349 l-6 -4 l6 4 l-6 4"/>
+          <path class="w w2" pathLength="1" d="M320 163 H335 V196 H349 l-6 -4 l6 4 l-6 4"/>
+          <path class="w w2" pathLength="1" d="M320 163 H335 V262 H349 l-6 -4 l6 4 l-6 4"/>
+          <path class="w w3" pathLength="1" d="M560 64 H575 V163 H589 l-6 -4 l6 4 l-6 4"/>
+          <path class="w w3" pathLength="1" d="M560 130 H575 V163 H589 l-6 -4 l6 4 l-6 4"/>
+          <path class="w w3" pathLength="1" d="M560 196 H575 V163 H589 l-6 -4 l6 4 l-6 4"/>
+          <path class="w w3" pathLength="1" d="M560 262 H575 V163 H589 l-6 -4 l6 4 l-6 4"/>
+          <path class="w w4" pathLength="1" d="M700 163 H715 V97 H729 l-6 -4 l6 4 l-6 4"/>
+          <path class="w w4" pathLength="1" d="M700 163 H729 l-6 -4 l6 4 l-6 4"/>
+          <path class="w w4" pathLength="1" d="M700 163 H715 V229 H729 l-6 -4 l6 4 l-6 4"/>
+          <path class="w w2" pathLength="1" d="M98 376 H119 l-6 -4 l6 4 l-6 4"/>
+          <path class="w w3" pathLength="1" d="M202 376 H223 l-6 -4 l6 4 l-6 4"/>
+          <path class="w w4" pathLength="1" d="M306 376 H327 l-6 -4 l6 4 l-6 4"/>
+          <path class="w w4" pathLength="1" d="M161 394 V420 H636 V344 H651 l-6 -4 l6 4 l-6 4"/>
+          <path class="w w4" pathLength="1" d="M161 394 V420 H636 V410 H651 l-6 -4 l6 4 l-6 4"/>
+        </svg>
       </div>
     </section>
 
